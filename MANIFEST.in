@@ -1,0 +1,4 @@
+include rss_feed/schema.sql
+graft rss_feed/static
+graft rss_feed/templates
+global-exclude *.pyc
