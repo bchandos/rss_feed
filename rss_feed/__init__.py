@@ -21,7 +21,7 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    import db
+    from . import db
     db.init_app(app)
 
     from . import auth

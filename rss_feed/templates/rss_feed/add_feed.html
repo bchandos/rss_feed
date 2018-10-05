@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-<form action="POST">
+<form method="POST">
     <label for="feed_url">Feed URL</label>
     <input name="feed_url" id="feed_url" value="{{ request.form['feed_url'] }}" required>
     <input type="submit" value="Save">

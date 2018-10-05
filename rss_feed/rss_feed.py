@@ -13,6 +13,7 @@ bp = Blueprint('rss_feed', __name__)
 
 
 @bp.route('/')
+@login_required
 def index():
     db = get_db()
     user_id = g.user['id']
@@ -49,7 +50,7 @@ def add_feed():
             db = get_db()
             db.execute(
                 'INSERT INTO feeds (feed_name, feed_url) VALUES (?, ?)', (feed_url, feed_name))
-            feed_id = db.cursor().lastrowid
+            feed_id = db.lastrowid
             db.execute(
                 'INSERT INTO user_feeds (user_id, feed_id) VALUES (?, ?)', (g.user['id'], feed_id))
             db.commit()
