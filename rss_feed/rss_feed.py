@@ -49,10 +49,13 @@ def add_feed():
 
             db = get_db()
             db.execute(
-                'INSERT INTO feeds (feed_name, feed_url) VALUES (?, ?)', (feed_url, feed_name))
-            feed_id = db.lastrowid
+                'INSERT INTO feeds (feed_url, feed_name) VALUES (?, ?)', (feed_url, feed_name))
+            # TODO figure out if lastrowid method is possible
+            db.commit()
+            feed = db.execute(
+                'SELECT id FROM feeds WHERE feed_url = ?', (feed_url,)).fetchone()
             db.execute(
-                'INSERT INTO user_feeds (user_id, feed_id) VALUES (?, ?)', (g.user['id'], feed_id))
+                'INSERT INTO user_feeds (user_id, feed_id) VALUES (?, ?)', (g.user['id'], feed['id']))
             db.commit()
             return redirect(url_for('rss_feed.index'))
     return render_template('rss_feed/add_feed.html')
@@ -95,3 +98,26 @@ def delete_feed(id):
         'DELETE FROM user_feeds WHERE feed_id = (?) AND user_id = (?)', (id, g.user['id']))
     db.commit()
     return redirect(url_for('rss_feed.index'))
+
+
+@bp.route('/update', defaults={'feed_id': None})
+@bp.route('/update/<int:feed_id>')
+@login_required
+def get_items(feed_id):
+    user_id = g.user['id']
+    db = get_db()
+    if feed_id:
+        feed = get_feed(feed_id)
+        with urlopen(feed['feed_url']) as f:
+            if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
+                xml_file = ET.fromstring(f.read())
+        for item in xml_file[0].findall('item'):
+            title = item.find('title').text
+            link = item.find('link').text
+            description = item.find('description').text
+            publication_date = item.find('pubDate').text
+            guid = item.find('guid').text
+            db.execute('INSERT OR IGNORE INTO items (feed_id, title, link, description, publication_date, guid) VALUES (?, ?, ?, ?, ?, ?)',
+                       (feed_id, title, link, description, publication_date, guid))
+        db.commit()
+    # TODO consider using session or g to store a user's feeds.
