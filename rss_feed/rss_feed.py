@@ -41,6 +41,10 @@ def add_feed():
             u = urlparse(feed_url, scheme='http')
             with urlopen(u.geturl()) as f:
                 if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
+                    root = ET.fromstring(f.read())
+                    feed_name = root[0].find('title').text
+                else:
+                    abort(404, f'Invalid feed URL ({feed_url}).')
 
             db = get_db()
             db.execute(
