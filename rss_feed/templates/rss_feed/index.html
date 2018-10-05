@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}News Feed Items{% endblock %}</h1>
+{% if g.user %}
+<a class="action" href="{{ url_for('rss_feed.add') }}">Add New Feed</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{% for item in items %}
+<article class="item">
+    <header>
+        <div>
+            <a href="{{ item['link'] }}">
+                <h1>{{ item['title'] }}</h1>
+            </a>
+            <div class="about">from {{ item['feed_name'] }} on {{ item['publication_date'].strftime('%Y-%m-%d') }}</div>
+        </div>
+    </header>
+    <p class="body">{{ item['description'] }}</p>
+</article>
+{% if not loop.last %}
+<hr>
+{% endif %}
+{% endfor %}
+{% endblock %}

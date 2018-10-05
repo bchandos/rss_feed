@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}Edit Feed {{ feed['feedname'] }}{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+<form action="POST">
+    <label for="feed_url">Feed URL</label>
+    <input name="feed_url" id="feed_url" value="{{ feed['feed_url'] }}" required>
+    {% if feed['user_feed_name'] %}
+    <label for="user_feed_name">Feed Name</label>
+    <input name="user_feed_name" id="user_feed_name" value="{{ feed['user_feed_name'] }}" required>
+    {% else %}
+    <label for="feed_name">Feed Name</label>
+    <input name="feed_name" id="feed_name" value="{{ feed['feed_name'] }}" required>
+    {% endif %}
+    <input type="submit" value="Save Edits">
+</form>
+<hr>
+<form action="{{ url_for('rss_feed.delete', id=feed['id']) }}" method="POST">
+    <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
+</form>
+{% endblock %}
