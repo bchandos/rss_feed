@@ -50,7 +50,7 @@ def login():
         if not error:
             session.clear()
             session['user_id'] = user['id']
-            return redirect(url_for('index'))
+            return redirect(url_for('rss_feed.index'))
 
         flash(error)
 
@@ -81,7 +81,7 @@ def load_logged_in_user():
 @bp.route('/logout')
 def logout():
     session.clear()
-    return redirect(url_for('index'))
+    return redirect(url_for('rss_feed.index'))
 
 
 def login_required(view):

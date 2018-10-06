@@ -4,6 +4,7 @@
 <h1>{% block title %}News Feed Items{% endblock %}</h1>
 {% if g.user %}
 <a class="action" href="{{ url_for('rss_feed.add_feed') }}">Add New Feed</a>
+<a class="action" href="{{ url_for('rss_feed.get_items') }}">Refresh All Feeds</a>
 {% endif %}
 {% endblock %}
 
@@ -15,7 +16,8 @@
             <a href="{{ item['link'] }}">
                 <h1>{{ item['title'] }}</h1>
             </a>
-            <div class="about">from {{ item['feed_name'] }} on {{ item['publication_date']|datetimeformat }}</div>
+            <div class="about">from <a href="/{{ item['feed_id'] }}">{{ item['feed_name'] }}</a> on {{
+                item['publication_date']|datetimeformat }}</div>
         </div>
     </header>
     <p class="body">{{ item['description'] }}</p>

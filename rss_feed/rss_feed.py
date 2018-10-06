@@ -20,11 +20,27 @@ bp = Blueprint('rss_feed', __name__)
 def index():
     db = get_db()
     user_id = g.user['id']
-    items = db.execute('SELECT feeds.feed_name, items.title, items.link, items.description, items.publication_date, items.guid, user_feeds.user_id '
+    items = db.execute('SELECT feeds.feed_name, items.feed_id, items.title, items.link, items.description, items.publication_date, items.guid, user_feeds.user_id '
                        'FROM items '
                        'INNER JOIN feeds ON items.feed_id = feeds.id '
                        'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
-                       'WHERE user_feeds.user_id = (?)', (user_id,)).fetchall()
+                       'WHERE user_feeds.user_id = (?) '
+                       'ORDER BY items.publication_date DESC', (user_id,)).fetchall()
+    return render_template('rss_feed/index.html', items=items)
+
+
+@bp.route('/<int:feed_id>')
+@login_required
+def feed_index(feed_id):
+    db = get_db()
+    user_id = g.user['id']
+    items = db.execute('SELECT feeds.feed_name, items.feed_id, items.title, items.link, items.description, items.publication_date, items.guid, user_feeds.user_id '
+                       'FROM items '
+                       'INNER JOIN feeds ON items.feed_id = feeds.id '
+                       'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
+                       'WHERE user_feeds.user_id = ? '
+                       'AND items.feed_id = ? '
+                       'ORDER BY items.publication_date DESC', (user_id, feed_id)).fetchall()
     return render_template('rss_feed/index.html', items=items)
 
 
@@ -60,7 +76,7 @@ def add_feed():
             db.execute(
                 'INSERT INTO user_feeds (user_id, feed_id) VALUES (?, ?)', (g.user['id'], feed['id']))
             db.commit()
-            return redirect(url_for('rss_feed.index'))
+            return redirect(url_for('rss_feed.get_items', feed_id=feed['id']))
     return render_template('rss_feed/add_feed.html')
 
 
