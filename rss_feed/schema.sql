@@ -21,7 +21,7 @@ CREATE TABLE items(
     title TEXT NOT NULL,
     link TEXT NOT NULL,
     description TEXT,
-    publication_date TEXT,
+    publication_date TEXT, 
     guid TEXT, 
     FOREIGN KEY (feed_id) REFERENCES feeds (id)
 );

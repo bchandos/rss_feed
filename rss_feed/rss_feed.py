@@ -2,10 +2,12 @@ import xml.etree.ElementTree as ET
 from urllib.parse import urlparse
 from urllib.request import urlopen
 from datetime import datetime
+import re
 
 from flask import (Blueprint, flash, g, redirect, render_template, request,
                    url_for)
 from werkzeug.exceptions import abort
+from dateutil.parser import parse
 
 from rss_feed.auth import login_required
 from rss_feed.db import get_db
@@ -128,9 +130,17 @@ def download_items(url, feed_id):
             for item in xml_file[0].findall('item'):
                 title = item.find('title').text
                 link = item.find('link').text
-                description = item.find('description').text
-                publication_date = item.find('pubDate').text
+                description = re.sub(
+                    '<[^<]+?>', '', item.find('description').text)
+                publication_date = datetime.timestamp(
+                    parse(item.find('pubDate').text))
                 guid = item.find('guid').text
                 db.execute('INSERT OR IGNORE INTO items (feed_id, title, link, description, publication_date, guid) VALUES (?, ?, ?, ?, ?, ?)',
                            (feed_id, title, link, description, publication_date, guid))
             db.commit()
+
+
+@bp.app_template_filter()
+def datetimeformat(value, format='%d-%m-%Y @ %H:%M'):
+    d = datetime.fromtimestamp(float(value))
+    return d.strftime(format)
