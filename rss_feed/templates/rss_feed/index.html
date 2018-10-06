@@ -15,7 +15,7 @@
             <a href="{{ item['link'] }}">
                 <h1>{{ item['title'] }}</h1>
             </a>
-            <div class="about">from {{ item['feed_name'] }} on {{ item['publication_date'].strftime('%Y-%m-%d') }}</div>
+            <div class="about">from {{ item['feed_name'] }} on {{ item['publication_date'] }}</div>
         </div>
     </header>
     <p class="body">{{ item['description'] }}</p>

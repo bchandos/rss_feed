@@ -60,10 +60,22 @@ def login():
 @bp.before_app_request
 def load_logged_in_user():
     user_id = session.get('user_id')
+    db = get_db()
     if not user_id:
         g.user = None
     else:
-        g.user = get_db().execute('SELECT * FROM user WHERE id = ?', (user_id,)).fetchone()
+        user_feeds = db.execute(
+            'SELECT * from user_feeds WHERE user_id = ?', (user_id,)).fetchall()
+        if user_feeds:
+            # if a user doesn't yet have added feeds, this query return None
+            g.user = db.execute('SELECT user.*, GROUP_CONCAT(user_feeds.feed_id) AS feed_group '
+                                'FROM user JOIN user_feeds ON user.id = user_feeds.user_id '
+                                'WHERE user.id = ? '
+                                'GROUP BY user.id', (user_id,)).fetchone()
+        else:
+            # fallback for if user has no added feeds, just return user fields
+            g.user = db.execute(
+                'SELECT * from user WHERE id = ?', (user_id,)).fetchone()
 
 
 @bp.route('/logout')

@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 from urllib.parse import urlparse
 from urllib.request import urlopen
+from datetime import datetime
 
 from flask import (Blueprint, flash, g, redirect, render_template, request,
                    url_for)
@@ -33,7 +34,7 @@ def add_feed():
         error = None
 
         if not feed_url:
-            error = 'Title is required.'
+            error = 'URL is required.'
 
         if error:
             flash(error)
@@ -63,7 +64,7 @@ def add_feed():
 
 def get_feed(id):
     feed = get_db().execute(
-        'SELECT feeds.feed_name, feeds.feed_url, user_feeds.user_id, user_feeds.user_feed_name '
+        'SELECT feeds.id, feeds.feed_name, feeds.feed_url, user_feeds.user_id, user_feeds.user_feed_name '
         'FROM feeds JOIN user_feeds ON feeds.id = (?) '
         'WHERE feeds.id = (?) AND user_feeds.user_id = (?)', (id, id, g.user['id'])).fetchone()
     if not feed:
@@ -104,20 +105,32 @@ def delete_feed(id):
 @bp.route('/update/<int:feed_id>')
 @login_required
 def get_items(feed_id):
-    user_id = g.user['id']
+    if 'feed_group' in g.user.keys():
+        if feed_id and str(feed_id) in g.user['feed_group']:
+            feed = get_feed(feed_id)
+            download_items(feed['feed_url'], feed_id)
+        elif not feed_id:
+            for user_feed_id in g.user['feed_group'].split(','):
+                feed = get_feed(int(user_feed_id))
+                download_items(feed['feed_url'], user_feed_id)
+        else:
+            abort(404, 'No such feed.')
+    else:
+        return redirect(url_for('add_feed'))
+    return redirect(url_for('index'))
+
+
+def download_items(url, feed_id):
     db = get_db()
-    if feed_id:
-        feed = get_feed(feed_id)
-        with urlopen(feed['feed_url']) as f:
-            if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
-                xml_file = ET.fromstring(f.read())
-        for item in xml_file[0].findall('item'):
-            title = item.find('title').text
-            link = item.find('link').text
-            description = item.find('description').text
-            publication_date = item.find('pubDate').text
-            guid = item.find('guid').text
-            db.execute('INSERT OR IGNORE INTO items (feed_id, title, link, description, publication_date, guid) VALUES (?, ?, ?, ?, ?, ?)',
-                       (feed_id, title, link, description, publication_date, guid))
-        db.commit()
-    # TODO consider using session or g to store a user's feeds.
+    with urlopen(url) as f:
+        if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
+            xml_file = ET.fromstring(f.read())
+            for item in xml_file[0].findall('item'):
+                title = item.find('title').text
+                link = item.find('link').text
+                description = item.find('description').text
+                publication_date = item.find('pubDate').text
+                guid = item.find('guid').text
+                db.execute('INSERT OR IGNORE INTO items (feed_id, title, link, description, publication_date, guid) VALUES (?, ?, ?, ?, ?, ?)',
+                           (feed_id, title, link, description, publication_date, guid))
+            db.commit()

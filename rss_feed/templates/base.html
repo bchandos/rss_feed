@@ -2,7 +2,9 @@
 <title>{% block title %}{% endblock %} - RSS Feed</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <nav>
-    <h1>RSS Feed</h1>
+    <a href="{{ url_for('index') }}">
+        <h1>RSS Feed</h1>
+    </a>
     <ul>
         {% if g.user %}
         <li><span>{{ g.user['username'] }}</span>

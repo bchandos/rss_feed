@@ -18,7 +18,7 @@
     <input type="submit" value="Save Edits">
 </form>
 <hr>
-<form action="{{ url_for('rss_feed.delete', id=feed['id']) }}" method="POST">
+<form action="{{ url_for('rss_feed.delete_feed', id=feed['id']) }}" method="POST">
     <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
 </form>
 {% endblock %}
