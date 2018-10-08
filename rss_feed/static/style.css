@@ -54,6 +54,10 @@ nav ul li a, nav ul li span, header .action {
     padding: 0.5rem;
 }
 
+.reload {
+    width: 1rem;
+}
+
 .content {
     padding: 0 1rem 1rem;
 }

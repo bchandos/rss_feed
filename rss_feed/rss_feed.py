@@ -136,6 +136,8 @@ def get_items(feed_id):
             abort(404, 'No such feed.')
     else:
         return redirect(url_for('add_feed'))
+    if feed_id:
+        return redirect(url_for('rss_feed.feed_index', feed_id=feed_id))
     return redirect(url_for('index'))
 
 

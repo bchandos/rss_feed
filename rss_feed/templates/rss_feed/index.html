@@ -9,7 +9,10 @@
 {% endblock %}
 
 {% block content %}
-{% if feed_name %}<a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">{{ feed_name }}</a>{% endif %}
+{% if feed_name %}
+<a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">{{ feed_name }}</a>
+<a href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}"><img class="reload" src="{{ url_for('static', filename='reload.png') }}"></a>
+{% endif %}
 {% for item in items %}
 <article class="
     item">
