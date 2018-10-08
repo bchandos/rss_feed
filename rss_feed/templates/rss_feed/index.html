@@ -9,8 +9,10 @@
 {% endblock %}
 
 {% block content %}
+{% if feed_name %}<a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">{{ feed_name }}</a>{% endif %}
 {% for item in items %}
-<article class="item">
+<article class="
+    item">
     <header>
         <div>
             <a href="{{ item['link'] }}">

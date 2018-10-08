@@ -41,7 +41,7 @@ def feed_index(feed_id):
                        'WHERE user_feeds.user_id = ? '
                        'AND items.feed_id = ? '
                        'ORDER BY items.publication_date DESC', (user_id, feed_id)).fetchall()
-    return render_template('rss_feed/index.html', items=items)
+    return render_template('rss_feed/index.html', items=items, feed_name=items[0]['feed_name'], feed_id=items[0]['feed_id'])
 
 
 @bp.route('/add_feed', methods=('GET', 'POST'))
@@ -112,9 +112,10 @@ def edit_feed(id):
 @login_required
 def delete_feed(id):
     db = get_db()
-    db.execute('DELETE FROM feeds WHERE id = (?)', (id,))
+    db.execute('DELETE FROM feeds WHERE id = ?', (id,))
     db.execute(
-        'DELETE FROM user_feeds WHERE feed_id = (?) AND user_id = (?)', (id, g.user['id']))
+        'DELETE FROM user_feeds WHERE feed_id = ? AND user_id = ?', (id, g.user['id']))
+    db.execute('DELETE FROM items WHERE feed_id = ?', (id,))
     db.commit()
     return redirect(url_for('rss_feed.index'))
 
@@ -157,6 +158,6 @@ def download_items(url, feed_id):
 
 
 @bp.app_template_filter()
-def datetimeformat(value, format='%d-%m-%Y @ %H:%M'):
+def datetimeformat(value, format='%m-%d-%Y @ %H:%M'):
     d = datetime.fromtimestamp(float(value))
     return d.strftime(format)
