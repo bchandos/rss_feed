@@ -23,6 +23,7 @@ CREATE TABLE items(
     description TEXT,
     publication_date TEXT, 
     guid TEXT UNIQUE, 
+    read BOOLEAN,
     FOREIGN KEY (feed_id) REFERENCES feeds (id)
 );
 
