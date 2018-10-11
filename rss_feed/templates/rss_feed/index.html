@@ -13,9 +13,9 @@
 <a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">{{ feed_name }}</a>
 <a href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}"><img class="reload" src="{{ url_for('static', filename='reload.png') }}"></a>
 {% endif %}
+<script type="text/javascript" src= {{ url_for('static', filename='mark_read.js') }}></script>
 {% for item in items %}
-<article class="
-    item">
+<article class="item">
     <header>
         <div>
             <a href="{{ item['link'] }}">
@@ -25,7 +25,8 @@
                 item['publication_date']|datetimeformat }}</div>
         </div>
     </header>
-    <p class="body">{{ item['description'] }}</p>
+    <p class="body" id="{{ item['id'] }}">{{ item['description'] }}</p>
+    <span class="read" id="span{{ item['id'] }}">&nbsp;</span>
 </article>
 {% if not loop.last %}
 <hr>

@@ -5,7 +5,7 @@ from datetime import datetime
 import re
 
 from flask import (Blueprint, flash, g, redirect, render_template, request,
-                   url_for)
+                   url_for, jsonify)
 from werkzeug.exceptions import abort
 from dateutil.parser import parse
 
@@ -20,7 +20,7 @@ bp = Blueprint('rss_feed', __name__)
 def index():
     db = get_db()
     user_id = g.user['id']
-    items = db.execute('SELECT feeds.feed_name, items.feed_id, items.title, items.link, items.description, items.publication_date, items.guid, user_feeds.user_id '
+    items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, items.link, items.description, items.publication_date, items.guid, user_feeds.user_id '
                        'FROM items '
                        'INNER JOIN feeds ON items.feed_id = feeds.id '
                        'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
@@ -34,7 +34,7 @@ def index():
 def feed_index(feed_id):
     db = get_db()
     user_id = g.user['id']
-    items = db.execute('SELECT feeds.feed_name, items.feed_id, items.title, items.link, items.description, items.publication_date, items.guid, user_feeds.user_id '
+    items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, items.link, items.description, items.publication_date, items.guid, user_feeds.user_id '
                        'FROM items '
                        'INNER JOIN feeds ON items.feed_id = feeds.id '
                        'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
@@ -163,3 +163,13 @@ def download_items(url, feed_id):
 def datetimeformat(value, format='%m-%d-%Y @ %H:%M'):
     d = datetime.fromtimestamp(float(value))
     return d.strftime(format)
+
+
+@bp.route('/_mark_read')
+def mark_read():
+    id = request.args.get('id', 0, type=int)
+    db = get_db()
+    if id:
+        db.execute('UPDATE items SET read = 1 WHERE id = ?', (id,))
+        db.commit()
+        return jsonify(id=id, read='Read')
