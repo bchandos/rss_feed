@@ -104,6 +104,11 @@ nav ul li a, nav ul li span, header .action {
     white-space: pre-line;
 }
 
+.read {
+    background-color: #f5f1de;
+    display: none;
+}
+
 .content:last-child {
     margin-bottom: 0;
 }

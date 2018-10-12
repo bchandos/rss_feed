@@ -20,7 +20,9 @@ bp = Blueprint('rss_feed', __name__)
 def index():
     db = get_db()
     user_id = g.user['id']
-    items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, items.link, items.description, items.publication_date, items.guid, user_feeds.user_id '
+    items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, '
+                       'items.link, items.description, items.publication_date, '
+                       'items.guid, user_feeds.user_id, items.read '
                        'FROM items '
                        'INNER JOIN feeds ON items.feed_id = feeds.id '
                        'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
@@ -34,7 +36,9 @@ def index():
 def feed_index(feed_id):
     db = get_db()
     user_id = g.user['id']
-    items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, items.link, items.description, items.publication_date, items.guid, user_feeds.user_id '
+    items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, '
+                       'items.link, items.description, items.publication_date, '
+                       'items.guid, user_feeds.user_id, items.read '
                        'FROM items '
                        'INNER JOIN feeds ON items.feed_id = feeds.id '
                        'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
