@@ -95,6 +95,12 @@ nav ul li a, nav ul li span, header .action {
     margin-bottom: 0;
 }
 
+.item>div.marker {
+    background-color: #8eb5cf;
+    padding: 0.5rem;
+    text-align: center;
+}
+
 .item .about {
     color: slategray;
     font-style: italic;
