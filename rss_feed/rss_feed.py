@@ -36,6 +36,8 @@ def index():
 def feed_index(feed_id):
     db = get_db()
     user_id = g.user['id']
+    feed_name = db.execute(
+        'SELECT feed_name FROM feeds WHERE id = ?', (feed_id,)).fetchone()['feed_name']
     items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, '
                        'items.link, items.description, items.publication_date, '
                        'items.guid, user_feeds.user_id, items.read '
@@ -45,7 +47,7 @@ def feed_index(feed_id):
                        'WHERE user_feeds.user_id = ? '
                        'AND items.feed_id = ? '
                        'ORDER BY items.publication_date DESC', (user_id, feed_id)).fetchall()
-    return render_template('rss_feed/index.html', items=items, feed_name=items[0]['feed_name'], feed_id=items[0]['feed_id'])
+    return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id)
 
 
 @bp.route('/add_feed', methods=('GET', 'POST'))

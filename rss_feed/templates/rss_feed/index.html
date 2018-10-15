@@ -14,6 +14,7 @@
 <a href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}"><img class="reload" src="{{ url_for('static', filename='reload.png') }}"></a>
 {% endif %}
 <script type="text/javascript" src={{ url_for('static', filename='mark_read.js') }}></script>
+{% if items %}
 {% for item in items %}
 <article class="item {% if item.read %}read{% else %}unread{% endif %}" id="{{ item['id'] }}">
     <header>
@@ -30,4 +31,5 @@
 <hr>
 </article>
 {% endfor %}
+{% else %}<div class="notice">No articles in feed</div>{% endif %}
 {% endblock %}
