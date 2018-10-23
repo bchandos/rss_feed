@@ -46,8 +46,10 @@ def feed_index(feed_id):
                        'INNER JOIN feeds ON items.feed_id = feeds.id '
                        'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
                        'INNER JOIN user_items on items.id = user_items.item_id '
-                       'WHERE user_feeds.user_id = ? AND user_items.user_id = ? '
-                       'ORDER BY items.publication_date DESC', (user_id, user_id)).fetchall()
+                       'WHERE user_feeds.user_id = ? '
+                       'AND user_items.user_id = ? '
+                       'AND items.feed_id = ? '
+                       'ORDER BY items.publication_date DESC', (user_id, user_id, feed_id)).fetchall()
     return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id)
 
 
