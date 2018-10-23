@@ -87,8 +87,16 @@ nav ul li a, nav ul li span, header .action {
     border: 1px solid #37a859;
 }
 
-.item>header {
+.item {
     display: flex;
+}
+
+.item>div.left-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.item>header {
     align-items: flex-end;
     font-size: 0.85em;
 }
@@ -105,7 +113,6 @@ nav ul li a, nav ul li span, header .action {
 .item>div.marker {
     background-color: #8eb5cf;
     padding: 0.5rem;
-    text-align: center;
 }
 
 .item .about {
