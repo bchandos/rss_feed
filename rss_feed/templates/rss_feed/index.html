@@ -13,9 +13,10 @@
 <a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">{{ feed_name }}</a>
 <a href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}"><img class="reload" src="{{ url_for('static', filename='reload.png') }}"></a>
 {% endif %}
+<script type="text/javascript" src={{ url_for('static', filename='mark_read.js') }}></script>
+{% if items %}
 {% for item in items %}
-<article class="
-    item">
+<article class="item {% if item.read %}read{% else %}unread{% endif %}" id="{{ item['id'] }}">
     <header>
         <div>
             <a href="{{ item['link'] }}">
@@ -26,9 +27,9 @@
         </div>
     </header>
     <p class="body">{{ item['description'] }}</p>
-</article>
-{% if not loop.last %}
+    <div class="marker" id="mr-{{ item['id'] }}">Mark Read</div>
 <hr>
-{% endif %}
+</article>
 {% endfor %}
+{% else %}<div class="notice">No articles in feed</div>{% endif %}
 {% endblock %}

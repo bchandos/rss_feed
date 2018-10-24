@@ -1,6 +1,8 @@
 <!doctype html>
 <title>{% block title %}{% endblock %} - RSS Feed</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
+<script type="text/javascript">$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
 <nav>
     <a href="{{ url_for('index') }}">
         <h1>RSS Feed</h1>

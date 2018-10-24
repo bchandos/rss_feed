@@ -80,6 +80,13 @@ nav ul li a, nav ul li span, header .action {
     border: 1px solid #377ba8;
 }
 
+.notice {
+    margin: 1em 0;
+    padding: 1em;
+    background: #d7f6ca;
+    border: 1px solid #37a859;
+}
+
 .item>header {
     display: flex;
     align-items: flex-end;
@@ -95,6 +102,11 @@ nav ul li a, nav ul li span, header .action {
     margin-bottom: 0;
 }
 
+.item>div.marker {
+    background-color: #8eb5cf;
+    padding: 0.5rem;
+}
+
 .item .about {
     color: slategray;
     font-style: italic;
@@ -102,6 +114,11 @@ nav ul li a, nav ul li span, header .action {
 
 .item .body {
     white-space: pre-line;
+}
+
+.read {
+    background-color: #f5f1de;
+    display: none;
 }
 
 .content:last-child {

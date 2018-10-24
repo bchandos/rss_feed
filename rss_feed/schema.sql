@@ -23,7 +23,6 @@ CREATE TABLE items(
     description TEXT,
     publication_date TEXT, 
     guid TEXT UNIQUE, 
-    read BOOLEAN,
     FOREIGN KEY (feed_id) REFERENCES feeds (id)
 );
 
@@ -32,6 +31,15 @@ CREATE TABLE user_feeds(
     user_id INTEGER NOT NULL,
     feed_id INTEGER NOT NULL,
     user_feed_name TEXT,
-    FOREIGN KEY (user_id) REFERENCES user (id)
+    FOREIGN KEY (user_id) REFERENCES user (id),
     FOREIGN KEY (feed_id) REFERENCES feeds (id)
+);
+
+CREATE TABLE user_items(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    item_id INTEGER NOT NULL,
+    read BOOLEAN,
+    FOREIGN KEY (user_id) REFERENCES user (id),
+    FOREIGN KEY (item_id) REFERENCES items (id)
 );
