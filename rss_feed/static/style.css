@@ -87,16 +87,8 @@ nav ul li a, nav ul li span, header .action {
     border: 1px solid #37a859;
 }
 
-.item {
-    display: flex;
-}
-
-.item>div.left-item {
-    display: flex;
-    flex-direction: column;
-}
-
 .item>header {
+    display: flex;
     align-items: flex-end;
     font-size: 0.85em;
 }
