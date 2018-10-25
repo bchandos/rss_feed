@@ -76,16 +76,13 @@ def add_feed():
                     abort(404, f'Invalid feed URL ({feed_url}).')
 
             db = get_db()
-            db.execute(
-                'INSERT INTO feeds (feed_url, feed_name) VALUES (?, ?)', (feed_url, feed_name))
+            feed_id = db.execute(
+                'INSERT INTO feeds (feed_url, feed_name) VALUES (?, ?)', (feed_url, feed_name)).lastrowid
             # TODO figure out if lastrowid method is possible
-            db.commit()
-            feed = db.execute(
-                'SELECT id FROM feeds WHERE feed_url = ?', (feed_url,)).fetchone()
             db.execute(
-                'INSERT INTO user_feeds (user_id, feed_id) VALUES (?, ?)', (g.user['id'], feed['id']))
+                'INSERT INTO user_feeds (user_id, feed_id) VALUES (?, ?)', (g.user['id'], feed_id))
             db.commit()
-            return redirect(url_for('rss_feed.get_items', feed_id=feed['id']))
+            return redirect(url_for('rss_feed.get_items', feed_id=feed_id))
     return render_template('rss_feed/add_feed.html')
 
 
