@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS user;
 DROP TABLE IF EXISTS feeds;
 DROP TABLE IF EXISTS items;
 DROP TABLE IF EXISTS user_feeds;
+DROP TABLE IF EXISTS user_items;
 
 CREATE TABLE user (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,19 +28,19 @@ CREATE TABLE items(
 );
 
 CREATE TABLE user_feeds(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     feed_id INTEGER NOT NULL,
     user_feed_name TEXT,
     FOREIGN KEY (user_id) REFERENCES user (id),
-    FOREIGN KEY (feed_id) REFERENCES feeds (id)
+    FOREIGN KEY (feed_id) REFERENCES feeds (id),
+    PRIMARY KEY (user_id, feed_id)
 );
 
 CREATE TABLE user_items(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     item_id INTEGER NOT NULL,
     read BOOLEAN,
     FOREIGN KEY (user_id) REFERENCES user (id),
-    FOREIGN KEY (item_id) REFERENCES items (id)
+    FOREIGN KEY (item_id) REFERENCES items (id),
+    PRIMARY KEY (user_id, item_id)
 );

@@ -158,8 +158,11 @@ def download_items(url, feed_id, user_id):
                 link = item.find('link').text
                 description = re.sub(
                     '<[^<]+?>', '', item.find('description').text)
-                publication_date = datetime.timestamp(
-                    parse(item.find('pubDate').text))
+                if item.find('pubDate'):
+                    publication_date = datetime.timestamp(
+                        parse(item.find('pubDate').text))
+                else:
+                    publication_date = datetime.timestamp(datetime.today())
                 guid = item.find('guid').text
                 item_id = db.execute('INSERT OR IGNORE INTO items (feed_id, title, link, description, publication_date, guid) VALUES (?, ?, ?, ?, ?, ?)',
                                      (feed_id, title, link, description, publication_date, guid)).lastrowid
