@@ -105,6 +105,15 @@ nav ul li a, nav ul li span, header .action {
 .item>div.marker {
     background-color: #8eb5cf;
     padding: 0.5rem;
+    text-align: center;
+    -webkit-user-select: none;
+    /* Chrome all / Safari all */
+    -moz-user-select: none;
+    /* Firefox all */
+    -ms-user-select: none;
+    /* IE 10+ */
+    user-select: none;
+    /* Likely future */
 }
 
 .item .about {
