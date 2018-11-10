@@ -1,0 +1,40 @@
+{
+    "name": "RSS Feed Reader",
+    "short_name": "RSS Feed",
+    "description": "RSS feed aggregator.",
+    "start_url": "/",
+    "background_color": "#99e1d9",
+    "theme_color": "#3b8ea3",
+    "icons": [
+        {
+            "src": "256x256.png",
+            "sizes": "256x256",
+            "type": "image/png"
+        },
+        {
+            "src": "16x16.png",
+            "sizes": "16x16",
+            "type": "image/png"
+        },
+        {
+            "src": "32x32.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "64x64.png",
+            "sizes": "64x64",
+            "type": "image/png"
+        },
+        {
+            "src": "128x128.png",
+            "sizes": "128x128",
+            "type": "image/png"
+        },
+        {
+            "src": "512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

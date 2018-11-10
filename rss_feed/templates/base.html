@@ -1,8 +1,10 @@
 <!doctype html>
 <title>{% block title %}{% endblock %} - RSS Feed</title>
+<link rel="icon" href="{{ url_for('static', filename='icons/32x32.png') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
 <script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
-<script type="text/javascript">$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
+<script type="text/javascript">$SCRIPT_ROOT = {{ request.script_root | tojson | safe }};</script>
 <nav>
     <a href="{{ url_for('index') }}">
         <h1>RSS Feed</h1>
