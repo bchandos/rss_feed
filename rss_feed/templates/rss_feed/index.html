@@ -26,9 +26,9 @@
                 item['publication_date']|datetimeformat }}</div>
         </div>
     </header>
-    <p class="body">{{ item['description'] }}</p>
+    <p class="body">{{ item['description']|safe }}</p>
     <div class="marker" id="mr-{{ item['id'] }}">Mark Read</div>
-<hr>
+    <hr>
 </article>
 {% endfor %}
 {% else %}<div class="notice">No articles in feed</div>{% endif %}

@@ -158,7 +158,7 @@ def download_items(url, feed_id, user_id):
                 link = item.find('link').text
                 description = re.sub(
                     '<[^<]+?>', '', item.find('description').text)
-                if item.find('pubDate'):
+                if item.find('pubDate') is not None:
                     publication_date = datetime.timestamp(
                         parse(item.find('pubDate').text))
                 else:
