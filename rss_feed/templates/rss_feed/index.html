@@ -4,14 +4,19 @@
 <h1>{% block title %}News Feed Items{% endblock %}</h1>
 {% if g.user %}
 <a class="action" href="{{ url_for('rss_feed.add_feed') }}">Add New Feed</a>
+{% if feed_name %}
+<a class="action" href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}">Refresh Feed</a>
+<a class="action" href="{{ url_for('rss_feed.mark_read_all', feed_id=feed_id) }}">Mark Feed Read</a>
+{% else %}
 <a class="action" href="{{ url_for('rss_feed.get_items') }}">Refresh All Feeds</a>
+<a class="action" href="{{ url_for('rss_feed.mark_read_all') }}">Mark All Read</a>
+{% endif %}
 {% endif %}
 {% endblock %}
 
 {% block content %}
 {% if feed_name %}
-<a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">{{ feed_name }}</a>
-<a href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}"><img class="reload" src="{{ url_for('static', filename='reload.png') }}"></a>
+<a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">Edit Settings for {{ feed_name }}</a>
 {% endif %}
 <script type="text/javascript" src={{ url_for('static', filename='mark_read.js') }}></script>
 {% if items %}

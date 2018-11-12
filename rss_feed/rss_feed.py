@@ -9,7 +9,7 @@ from flask import (Blueprint, flash, g, redirect, render_template, request,
 from werkzeug.exceptions import abort
 from dateutil.parser import parse
 
-from rss_feed.auth import login_required
+from rss_feed.auth import login_required, debug_only
 from rss_feed.db import get_db
 
 bp = Blueprint('rss_feed', __name__)
@@ -187,3 +187,36 @@ def mark_read():
             'UPDATE user_items SET read = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
         db.commit()
         return jsonify(id=id, read='Read')
+
+
+@bp.route('/mark_read_all', defaults={'feed_id': None})
+@bp.route('/mark_read_all/<int:feed_id>')
+@login_required
+def mark_read_all(feed_id):
+    user_id = g.user['id']
+    db = get_db()
+    if not feed_id:
+        db.execute(
+            'UPDATE user_items SET read = 1 WHERE user_id = ?', (user_id,))
+        db.commit()
+        return redirect(url_for('index'))
+    else:
+        all_items = db.execute(
+            'SELECT id FROM items WHERE feed_id = ?', (feed_id,)).fetchall()
+        for item in all_items:
+            db.execute(
+                'UPDATE user_items SET read = 1 WHERE item_id = ? AND user_id = ?', (item['id'], user_id))
+        db.commit()
+        return redirect(url_for('rss_feed.feed_index', feed_id=feed_id))
+
+
+@bp.route('/__allunread')
+@login_required
+@debug_only
+def all_unread():
+    # debugging end point to reset all user read statuses
+    user_id = g.user['id']
+    db = get_db()
+    db.execute('UPDATE user_items SET read = 0 WHERE user_id = ?', (user_id,))
+    db.commit()
+    return redirect(url_for('index'))
