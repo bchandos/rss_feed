@@ -11,6 +11,10 @@
 <a class="action" href="{{ url_for('rss_feed.get_items') }}">Refresh All Feeds</a>
 <a class="action" href="{{ url_for('rss_feed.mark_read_all') }}">Mark All Read</a>
 {% endif %}
+<form id="show_hide">
+    <label for="show_read">Show Read</label>
+    <input type="checkbox" name="show_read" value="show_read">
+</form>
 {% endif %}
 {% endblock %}
 
@@ -19,9 +23,10 @@
 <a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">Edit Settings for {{ feed_name }}</a>
 {% endif %}
 <script type="text/javascript" src={{ url_for('static', filename='mark_read.js') }}></script>
+<script type="text/javascript" src={{ url_for('static', filename='show_hide.js') }}></script>
 {% if items %}
 {% for item in items %}
-<article class="item {% if item.read %}read{% else %}unread{% endif %}" id="{{ item['id'] }}">
+<article class="item {% if item.read %}read invisible{% else %}unread{% endif %}" id="{{ item['id'] }}">
     <header>
         <div>
             <a href="{{ item['link'] }}">

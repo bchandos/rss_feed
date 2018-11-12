@@ -127,6 +127,9 @@ nav ul li a, nav ul li span, header .action {
 
 .read {
     background-color: #f5f1de;
+}
+
+.invisible {
     display: none;
 }
 
