@@ -11,14 +11,13 @@
 <a class="action" href="{{ url_for('rss_feed.get_items') }}">Refresh All Feeds</a>
 <a class="action" href="{{ url_for('rss_feed.mark_read_all') }}">Mark All Read</a>
 {% endif %}
-<form id="show_hide">
-    <label for="show_read">Show Read</label>
-    <input type="checkbox" name="show_read" value="show_read">
-</form>
 {% endif %}
 {% endblock %}
 
 {% block content %}
+<div class="feed_controls">
+    <div id="show_read">Show Read</div>
+</div>
 {% if feed_name %}
 <a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">Edit Settings for {{ feed_name }}</a>
 {% endif %}

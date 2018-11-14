@@ -1,9 +1,10 @@
-$("#show_hide :checkbox").change(function () {
-    if (this.checked) {
+$("#show_read").on("click", function () {
+    if ($(this).text() == "Show Read") {
         $("article.read").removeClass("invisible");
-        $("label[for='show_read']").text("Hide Read");
-    } else {
+        $(this).text("Hide Read");
+    }
+    else {
         $("article.read").addClass("invisible");
-        $("label[for='show_read']").text("Show Read");
+        $(this).text("Show Read");
     }
 });
