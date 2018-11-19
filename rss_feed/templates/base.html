@@ -8,7 +8,7 @@
 <script type="text/javascript">$SCRIPT_ROOT = {{ request.script_root | tojson | safe }};</script>
 <nav>
     <a href="{{ url_for('rss_feed.index') }}">
-        <h1>RSS Feed</h1>
+        <img id="logo" src="{{ url_for('static', filename='icons/256x256.png') }}" />
     </a>
     <ul>
         {% if g.user %}

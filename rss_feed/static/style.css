@@ -143,6 +143,10 @@ div.feed_controls {
     /* Likely future */
 }
 
+#logo {
+    max-width: 2rem;
+}
+
 .item .about {
     color: slategray;
     font-style: italic;
