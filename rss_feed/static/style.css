@@ -127,7 +127,7 @@ div.feed_controls {
     /* Likely future */
 }
 
-#show_read {
+#show_read, #sort_order {
     background-color: #8eb5cf;
     padding: 0.5rem;
     text-align: center;

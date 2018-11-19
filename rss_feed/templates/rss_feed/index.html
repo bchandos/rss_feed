@@ -17,6 +17,7 @@
 {% block content %}
 <div class="feed_controls">
     <div id="show_read">Show Read</div>
+    <div id="sort_order">Sort {{ sort_order_opp }}</div>
 </div>
 {% if feed_name %}
 <a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">Edit Settings for {{ feed_name }}</a>

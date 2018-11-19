@@ -29,6 +29,6 @@ def create_app(test_config=None):
 
     from . import rss_feed
     app.register_blueprint(rss_feed.bp)
-    app.add_url_rule('/', endpoint='index')
+   #app.add_url_rule('/', endpoint='index')
 
     return app

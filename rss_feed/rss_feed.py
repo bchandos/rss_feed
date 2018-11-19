@@ -15,11 +15,18 @@ from rss_feed.db import get_db
 bp = Blueprint('rss_feed', __name__)
 
 
-@bp.route('/')
+@bp.route('/', defaults={'sort': 'DESC'})
+@bp.route('/<sort>')
 @login_required
-def index():
+def index(sort):
     db = get_db()
     user_id = g.user['id']
+    if sort == 'ASC':
+        order_by = 'ORDER BY items.publication_date ASC'
+        sort_order_opp = 'Descending'
+    else:
+        order_by = 'ORDER BY items.publication_date DESC'
+        sort_order_opp = 'Ascending'
     items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, '
                        'items.link, items.description, items.publication_date, '
                        'items.guid, user_feeds.user_id, user_items.read '
@@ -28,8 +35,8 @@ def index():
                        'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
                        'INNER JOIN user_items on items.id = user_items.item_id '
                        'WHERE user_feeds.user_id = ? AND user_items.user_id = ? '
-                       'ORDER BY items.publication_date DESC', (user_id, user_id)).fetchall()
-    return render_template('rss_feed/index.html', items=items)
+                       + order_by, (user_id, user_id)).fetchall()
+    return render_template('rss_feed/index.html', items=items, sort_order_opp=sort_order_opp)
 
 
 @bp.route('/<int:feed_id>')
@@ -145,7 +152,7 @@ def get_items(feed_id):
         return redirect(url_for('add_feed'))
     if feed_id:
         return redirect(url_for('rss_feed.feed_index', feed_id=feed_id))
-    return redirect(url_for('index'))
+    return redirect(url_for('rss_feed.index'))
 
 
 def download_items(url, feed_id, user_id):
@@ -199,7 +206,7 @@ def mark_read_all(feed_id):
         db.execute(
             'UPDATE user_items SET read = 1 WHERE user_id = ?', (user_id,))
         db.commit()
-        return redirect(url_for('index'))
+        return redirect(url_for('rss_feed.index'))
     else:
         all_items = db.execute(
             'SELECT id FROM items WHERE feed_id = ?', (feed_id,)).fetchall()
@@ -219,4 +226,4 @@ def all_unread():
     db = get_db()
     db.execute('UPDATE user_items SET read = 0 WHERE user_id = ?', (user_id,))
     db.commit()
-    return redirect(url_for('index'))
+    return redirect(url_for('rss_feed.index'))

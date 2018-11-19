@@ -7,7 +7,7 @@
 <script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
 <script type="text/javascript">$SCRIPT_ROOT = {{ request.script_root | tojson | safe }};</script>
 <nav>
-    <a href="{{ url_for('index') }}">
+    <a href="{{ url_for('rss_feed.index') }}">
         <h1>RSS Feed</h1>
     </a>
     <ul>
