@@ -15,7 +15,7 @@ from rss_feed.db import get_db
 bp = Blueprint('rss_feed', __name__)
 
 
-@bp.route('/', defaults={'sort': 'DESC'})
+@bp.route('/', defaults={'sort': 'Descending'})
 @login_required
 def index(sort):
     db = get_db()
@@ -23,7 +23,7 @@ def index(sort):
     sort_param = request.args.get('sort', None)
     if sort_param:
         sort = sort_param
-    if sort == 'ASC':
+    if sort == 'Ascending':
         order_by = 'ORDER BY items.publication_date ASC'
         sort_order_opp = 'Descending'
     else:

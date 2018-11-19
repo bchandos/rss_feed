@@ -17,13 +17,15 @@
 {% block content %}
 <div class="feed_controls">
     <div id="show_read">Show Read</div>
-    <div id="sort_order">Sort {{ sort_order_opp }}</div>
+    <a href="{{ url_for('rss_feed.index') }}?sort={{ sort_order_opp }}">
+        <div id="sort_order">Sort {{ sort_order_opp }}</div>
+    </a>
 </div>
 {% if feed_name %}
 <a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">Edit Settings for {{ feed_name }}</a>
 {% endif %}
-<script type="text/javascript" src={{ url_for('static', filename='mark_read.js') }}></script>
-<script type="text/javascript" src={{ url_for('static', filename='show_hide.js') }}></script>
+<script type="text/javascript" src="{{ url_for('static', filename='mark_read.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='show_hide.js') }}"></script>
 {% if items %}
 {% for item in items %}
 <article class="item {% if item.read %}read invisible{% else %}unread{% endif %}" id="{{ item['id'] }}">
