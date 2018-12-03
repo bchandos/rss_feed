@@ -1,6 +1,7 @@
 import functools
-from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.exceptions import abort
 
 from rss_feed.db import get_db
 
@@ -89,5 +90,14 @@ def login_required(view):
     def wrapped_view(**kwargs):
         if g.user is None:
             return redirect(url_for('auth.login'))
+        return view(**kwargs)
+    return wrapped_view
+
+
+def debug_only(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if not current_app.debug:
+            abort(404)
         return view(**kwargs)
     return wrapped_view

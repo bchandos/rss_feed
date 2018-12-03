@@ -9,17 +9,26 @@ from flask import (Blueprint, flash, g, redirect, render_template, request,
 from werkzeug.exceptions import abort
 from dateutil.parser import parse
 
-from rss_feed.auth import login_required
+from rss_feed.auth import login_required, debug_only
 from rss_feed.db import get_db
 
 bp = Blueprint('rss_feed', __name__)
 
 
-@bp.route('/')
+@bp.route('/', defaults={'sort': 'Descending'})
 @login_required
-def index():
+def index(sort):
     db = get_db()
     user_id = g.user['id']
+    sort_param = request.args.get('sort', None)
+    if sort_param:
+        sort = sort_param
+    if sort == 'Ascending':
+        order_by = 'ORDER BY items.publication_date ASC'
+        sort_order_opp = 'Descending'
+    else:
+        order_by = 'ORDER BY items.publication_date DESC'
+        sort_order_opp = 'Ascending'
     items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, '
                        'items.link, items.description, items.publication_date, '
                        'items.guid, user_feeds.user_id, user_items.read '
@@ -28,15 +37,24 @@ def index():
                        'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
                        'INNER JOIN user_items on items.id = user_items.item_id '
                        'WHERE user_feeds.user_id = ? AND user_items.user_id = ? '
-                       'ORDER BY items.publication_date DESC', (user_id, user_id)).fetchall()
-    return render_template('rss_feed/index.html', items=items)
+                       + order_by, (user_id, user_id)).fetchall()
+    return render_template('rss_feed/index.html', items=items, sort_order_opp=sort_order_opp)
 
 
-@bp.route('/<int:feed_id>')
+@bp.route('/<int:feed_id>', defaults={'sort': 'Descending'})
 @login_required
-def feed_index(feed_id):
+def feed_index(feed_id, sort):
     db = get_db()
     user_id = g.user['id']
+    sort_param = request.args.get('sort', None)
+    if sort_param:
+        sort = sort_param
+    if sort == 'Ascending':
+        order_by = 'ORDER BY items.publication_date ASC'
+        sort_order_opp = 'Descending'
+    else:
+        order_by = 'ORDER BY items.publication_date DESC'
+        sort_order_opp = 'Ascending'
     feed_name = db.execute(
         'SELECT feed_name FROM feeds WHERE id = ?', (feed_id,)).fetchone()['feed_name']
     items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, '
@@ -49,8 +67,8 @@ def feed_index(feed_id):
                        'WHERE user_feeds.user_id = ? '
                        'AND user_items.user_id = ? '
                        'AND items.feed_id = ? '
-                       'ORDER BY items.publication_date DESC', (user_id, user_id, feed_id)).fetchall()
-    return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id)
+                       + order_by, (user_id, user_id, feed_id)).fetchall()
+    return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id, sort_order_opp=sort_order_opp)
 
 
 @bp.route('/add_feed', methods=('GET', 'POST'))
@@ -145,7 +163,7 @@ def get_items(feed_id):
         return redirect(url_for('add_feed'))
     if feed_id:
         return redirect(url_for('rss_feed.feed_index', feed_id=feed_id))
-    return redirect(url_for('index'))
+    return redirect(url_for('rss_feed.index'))
 
 
 def download_items(url, feed_id, user_id):
@@ -187,3 +205,36 @@ def mark_read():
             'UPDATE user_items SET read = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
         db.commit()
         return jsonify(id=id, read='Read')
+
+
+@bp.route('/mark_read_all', defaults={'feed_id': None})
+@bp.route('/mark_read_all/<int:feed_id>')
+@login_required
+def mark_read_all(feed_id):
+    user_id = g.user['id']
+    db = get_db()
+    if not feed_id:
+        db.execute(
+            'UPDATE user_items SET read = 1 WHERE user_id = ?', (user_id,))
+        db.commit()
+        return redirect(url_for('rss_feed.index'))
+    else:
+        all_items = db.execute(
+            'SELECT id FROM items WHERE feed_id = ?', (feed_id,)).fetchall()
+        for item in all_items:
+            db.execute(
+                'UPDATE user_items SET read = 1 WHERE item_id = ? AND user_id = ?', (item['id'], user_id))
+        db.commit()
+        return redirect(url_for('rss_feed.feed_index', feed_id=feed_id))
+
+
+@bp.route('/__allunread')
+@login_required
+@debug_only
+def all_unread():
+    # debugging end point to reset all user read statuses
+    user_id = g.user['id']
+    db = get_db()
+    db.execute('UPDATE user_items SET read = 0 WHERE user_id = ?', (user_id,))
+    db.commit()
+    return redirect(url_for('rss_feed.index'))
