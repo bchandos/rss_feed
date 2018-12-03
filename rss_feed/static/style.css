@@ -114,6 +114,7 @@ div.feed_controls {
 }
 
 .item>div.marker {
+    cursor: pointer;
     background-color: #8eb5cf;
     padding: 0.5rem;
     text-align: center;
@@ -128,6 +129,7 @@ div.feed_controls {
 }
 
 #show_read, #sort_order {
+    cursor: pointer;
     background-color: #8eb5cf;
     margin-right: 0.5rem;
     padding: 0.5rem;
@@ -141,6 +143,11 @@ div.feed_controls {
     /* IE 10+ */
     user-select: none;
     /* Likely future */
+}
+
+a#no_style:link, a#no_style:visited, a#no_style:hover, a#no_style:active {
+    color: black;
+    text-decoration: none;
 }
 
 #logo {

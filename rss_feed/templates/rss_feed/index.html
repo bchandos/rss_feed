@@ -17,7 +17,7 @@
 {% block content %}
 <div class="feed_controls">
     <div id="show_read">Show Read</div>
-    <a href="{{ url_for('rss_feed.index') }}?sort={{ sort_order_opp }}">
+    <a id="no_style" href="{{ url_for('rss_feed.index') }}?sort={{ sort_order_opp }}">
         <div id="sort_order">Sort {{ sort_order_opp }}</div>
     </a>
 </div>
