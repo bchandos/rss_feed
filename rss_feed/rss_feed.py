@@ -41,11 +41,20 @@ def index(sort):
     return render_template('rss_feed/index.html', items=items, sort_order_opp=sort_order_opp)
 
 
-@bp.route('/<int:feed_id>')
+@bp.route('/<int:feed_id>', defaults={'sort': 'Descending'})
 @login_required
-def feed_index(feed_id):
+def feed_index(feed_id, sort):
     db = get_db()
     user_id = g.user['id']
+    sort_param = request.args.get('sort', None)
+    if sort_param:
+        sort = sort_param
+    if sort == 'Ascending':
+        order_by = 'ORDER BY items.publication_date ASC'
+        sort_order_opp = 'Descending'
+    else:
+        order_by = 'ORDER BY items.publication_date DESC'
+        sort_order_opp = 'Ascending'
     feed_name = db.execute(
         'SELECT feed_name FROM feeds WHERE id = ?', (feed_id,)).fetchone()['feed_name']
     items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, '
@@ -58,8 +67,8 @@ def feed_index(feed_id):
                        'WHERE user_feeds.user_id = ? '
                        'AND user_items.user_id = ? '
                        'AND items.feed_id = ? '
-                       'ORDER BY items.publication_date DESC', (user_id, user_id, feed_id)).fetchall()
-    return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id)
+                       + order_by, (user_id, user_id, feed_id)).fetchall()
+    return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id, sort_order_opp=sort_order_opp)
 
 
 @bp.route('/add_feed', methods=('GET', 'POST'))

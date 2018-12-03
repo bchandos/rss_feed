@@ -17,9 +17,15 @@
 {% block content %}
 <div class="feed_controls">
     <div id="show_read">Show Read</div>
+    {% if feed_name %}
+    <a id="no_style" href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}?sort={{ sort_order_opp }}">
+        <div id="sort_order">Sort {{ sort_order_opp }}</div>
+    </a>
+    {% else %}
     <a id="no_style" href="{{ url_for('rss_feed.index') }}?sort={{ sort_order_opp }}">
         <div id="sort_order">Sort {{ sort_order_opp }}</div>
     </a>
+    {% endif %}
 </div>
 {% if feed_name %}
 <a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">Edit Settings for {{ feed_name }}</a>
