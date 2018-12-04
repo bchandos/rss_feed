@@ -132,6 +132,19 @@ def edit_feed(id):
     return render_template('rss_feed/edit.html', feed=feed)
 
 
+@bp.route('/user', methods=('GET',))
+@login_required
+def user_menu():
+    user_id = g.user['id']
+    db = get_db()
+    users_feeds = db.execute('SELECT feeds.feed_name, feeds.id, user_feeds.user_id '
+                             'FROM feeds '
+                             'INNER JOIN user_feeds ON user_feeds.feed_id = feeds.id '
+                             'WHERE user_feeds.user_id = ?', (user_id,)
+                             ).fetchall()
+    return render_template('rss_feed/user.html', users_feeds=users_feeds)
+
+
 @bp.route('/<int:id>/delete', methods=('POST',))
 @login_required
 def delete_feed(id):

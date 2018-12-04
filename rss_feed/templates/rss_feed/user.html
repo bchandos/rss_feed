@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<h1>{% block title %}Edit Your Feeds{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+{% for user_feed in users_feeds %}
+<div>
+    <span>{{ user_feed['feed_name'] }}</span>
+    <span><a href="{{ url_for('rss_feed.edit_feed', id=user_feed['id']) }}">edit</a></span>
+    <span>
+        <form action="{{ url_for('rss_feed.delete_feed', id=user_feed['id']) }}" method="POST">
+            <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
+        </form>
+    </span>
+</div>
+{% endfor %}
+{% endblock %}
