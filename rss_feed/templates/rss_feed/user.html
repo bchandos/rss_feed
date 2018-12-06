@@ -5,15 +5,17 @@
 {% endblock %}
 
 {% block content %}
-{% for user_feed in users_feeds %}
-<div>
-    <span class="table">{{ user_feed['feed_name'] }}</span>
-    <span class="table"><a href="{{ url_for('rss_feed.edit_feed', id=user_feed['id']) }}">edit</a></span>
-    <span class="table">
+
+<div class="rtable">
+    {% for user_feed in users_feeds %}
+    <div class="rtable-cell">{{ user_feed['feed_name'] }}</div>
+    <div class="rtable-cell"><a href="{{ url_for('rss_feed.edit_feed', id=user_feed['id']) }}"><img class="icon" src="{{ url_for('static', filename='icons/edit_icon.png') }}"></a></div>
+    <div class="rtable-cell">
         <form id="inline" action="{{ url_for('rss_feed.delete_feed', id=user_feed['id']) }}" method="POST">
-            <input type="submit" value="Delete" onclick="return confirm('Are you sure?');">
+            <input type="image" value="Delete" src="{{ url_for('static', filename='icons/delete-256.png') }}" onclick="return confirm('Are you sure?');">
         </form>
-    </span>
+    </div>
+
+    {% endfor %}
 </div>
-{% endfor %}
 {% endblock %}
