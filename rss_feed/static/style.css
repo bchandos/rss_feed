@@ -223,13 +223,24 @@ form#inline {
 .rtable-cell {
     box-sizing: border-box;
     flex-grow: 1;
-    width: 100%;
-    padding: 0.8em 1.2em;
+    padding: 1em 1em;
     overflow: hidden;
     list-style: none;
     border: solid 3px white;
-    background: rgb(211, 211, 211);
-    width: 33.33%;
+    background: rgb(240, 240, 240);
+    width: 33.33%
+}
+
+.rtable-left {
+    width: 60%;
+}
+
+.rtable-center {
+    width: 20%;
+}
+
+.rtable-right {
+    width: 20%;
 }
 
 img.icon {
