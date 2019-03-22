@@ -4,7 +4,7 @@ $(function () {
             id: $(this).attr('id').slice(3)
         }, function (data) {
             $('article#' + data.id).fadeOut('200', function () {
-                $('article#' + data.id).removeClass("unread").addClass("read");
+                $('article#' + data.id).removeClass("unread").addClass("read invisible");
             });
         });
         return false;
