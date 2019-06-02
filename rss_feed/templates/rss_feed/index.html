@@ -3,13 +3,28 @@
 {% block header %}
 <h1>{% block title %}News Feed Items{% endblock %}</h1>
 {% if g.user %}
-<a class="action" href="{{ url_for('rss_feed.add_feed') }}">Add New Feed</a>
+<a class="action" href="{{ url_for('rss_feed.add_feed') }}">
+    <img class="icon" src="{{ url_for('static', filename='icons/add_feed.png') }}" alt="Add New Feed" />
+    <span class="action-text">Add New Feed</span>
+</a>
 {% if feed_name %}
-<a class="action" href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}">Refresh Feed</a>
-<a class="action" href="{{ url_for('rss_feed.mark_read_all', feed_id=feed_id) }}">Mark Feed Read</a>
+<a class="action" href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}">
+    <img class="icon" src="{{ url_for('static', filename='icons/refresh_feeds.png') }}" alt="Refresh Feed" />
+    <span class="action-text">Refresh Feed</span>
+</a>
+<a class="action" href="{{ url_for('rss_feed.mark_read_all', feed_id=feed_id) }}">
+    <img class="icon" src="{{ url_for('static', filename='icons/mark_read.png') }}" alt="Mark Feed Read" />
+    <span class="action-text">Mark Feed Read</span>
+</a>
 {% else %}
-<a class="action" href="{{ url_for('rss_feed.get_items') }}">Refresh All Feeds</a>
-<a class="action" href="{{ url_for('rss_feed.mark_read_all') }}">Mark All Read</a>
+<a class="action" href="{{ url_for('rss_feed.get_items') }}">
+    <img class="icon" src="{{ url_for('static', filename='icons/refresh_feeds.png') }}" alt="Refresh All Feeds" />
+    <span class="action-text">Refresh All Feeds</span>
+</a>
+<a class="action" href="{{ url_for('rss_feed.mark_read_all') }}">
+    <img class="icon" src="{{ url_for('static', filename='icons/mark_read.png') }}" alt="Mark All Read" />
+    <span class="action-text">Mark All Read</span>
+</a>
 {% endif %}
 {% endif %}
 {% endblock %}

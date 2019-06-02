@@ -247,3 +247,9 @@ img.icon {
     width: 1.5em;
     height: 1.5em;
 }
+
+@media only screen and (max-width: 767px) {
+    .action-text {
+        font-size: 0;
+    }
+}
