@@ -128,7 +128,7 @@ div.feed_controls {
     /* Likely future */
 }
 
-#show_read, #sort_order {
+#show_read, #sort_order, .bookmark {
     cursor: pointer;
     background-color: #8eb5cf;
     margin-right: 0.5rem;
@@ -252,4 +252,16 @@ img.icon {
     .action-text {
         font-size: 0;
     }
+}
+
+img.bookmark {
+    position: absolute;
+    width: 15px;
+    top: 0%;
+    right: 0%;
+    background-color: white;
+}
+
+div {
+    position: relative;
 }

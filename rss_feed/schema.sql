@@ -40,6 +40,7 @@ CREATE TABLE user_items(
     user_id INTEGER NOT NULL,
     item_id INTEGER NOT NULL,
     read BOOLEAN,
+    bookmark BOOLEAN,
     FOREIGN KEY (user_id) REFERENCES user (id),
     FOREIGN KEY (item_id) REFERENCES items (id),
     PRIMARY KEY (user_id, item_id)

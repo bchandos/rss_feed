@@ -47,11 +47,19 @@
 {% endif %}
 <script type="text/javascript" src="{{ url_for('static', filename='mark_read.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='show_hide.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='bookmark.js') }}"></script>
 {% if items %}
 {% for item in items %}
 <article class="item {% if item.read %}read invisible{% else %}unread{% endif %}" id="{{ item['id'] }}">
     <header>
         <div>
+            {% if item['bookmark'] %}
+            <img class="bookmark marked" src="{{ url_for('static', filename='icons/bookmark-red.png') }}"
+                id="bm-{{ item['id'] }}" />
+            {% else %}
+            <img class="bookmark unmarked" src="{{ url_for('static', filename='icons/bookmark.png') }}"
+                id="bm-{{ item['id'] }}" />
+            {% endif %}
             <a href="{{ item['link'] }}">
                 <h1>{{ item['title'] }}</h1>
             </a>

@@ -31,7 +31,7 @@ def index(sort):
         sort_order_opp = 'Ascending'
     items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, '
                        'items.link, items.description, items.publication_date, '
-                       'items.guid, user_feeds.user_id, user_items.read '
+                       'items.guid, user_feeds.user_id, user_items.read, user_items.bookmark '
                        'FROM items '
                        'INNER JOIN feeds ON items.feed_id = feeds.id '
                        'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
@@ -209,6 +209,7 @@ def datetimeformat(value, format='%m-%d-%Y @ %H:%M'):
 
 
 @bp.route('/_mark_read')
+# TODO make this toggle
 def mark_read():
     user_id = g.user['id']
     id = request.args.get('id', 0, type=int)
@@ -218,6 +219,26 @@ def mark_read():
             'UPDATE user_items SET read = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
         db.commit()
         return jsonify(id=id, read='Read')
+
+
+@bp.route('/_bookmark')
+# TODO make this toggle
+def bookmark():
+    user_id = g.user['id']
+    id = request.args.get('id', 0, type=int)
+    marked = request.args.get('marked', 'false', type=str)
+    db = get_db()
+    if id:
+        if marked == 'true':
+            db.execute(
+                'UPDATE user_items SET bookmark = 0 WHERE item_id = ? AND user_id = ?', (id, user_id))
+            bm = 'false'
+        else:
+            db.execute(
+                'UPDATE user_items SET bookmark = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
+            bm = 'true'
+        db.commit()
+        return jsonify(id=id, bookmark=bm)
 
 
 @bp.route('/mark_read_all', defaults={'feed_id': None})
