@@ -233,12 +233,14 @@ def bookmark():
             db.execute(
                 'UPDATE user_items SET bookmark = 0 WHERE item_id = ? AND user_id = ?', (id, user_id))
             bm = 'false'
+            u = url_for('static', filename='icons/bookmark.png')
         else:
             db.execute(
                 'UPDATE user_items SET bookmark = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
             bm = 'true'
+            u = url_for('static', filename='icons/bookmark-red.png')
         db.commit()
-        return jsonify(id=id, bookmark=bm)
+        return jsonify(id=id, bookmark=bm, u=u)
 
 
 @bp.route('/mark_read_all', defaults={'feed_id': None})

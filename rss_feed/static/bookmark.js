@@ -6,11 +6,11 @@ $(function () {
         }, function (data) {
             if (data.bookmark == 'true') {
                 // must find a way to have flask provide these img src urls
-                $('#bm-' + data.id).attr('src', 'static/icons/bookmark-red.png');
+                $('#bm-' + data.id).attr('src', data.u);
                 $('#bm-' + data.id).removeClass('unmarked').addClass('marked');
             }
             else {
-                $('#bm-' + data.id).attr('src', 'static/icons/bookmark.png');
+                $('#bm-' + data.id).attr('src', data.u);
                 $('#bm-' + data.id).removeClass('marked').addClass('unmarked');
             }
         });
