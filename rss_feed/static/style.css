@@ -128,7 +128,7 @@ div.feed_controls {
     /* Likely future */
 }
 
-#show_read, #sort_order, .bookmark {
+#show_read, #sort_order, #bookmark, .bookmark {
     cursor: pointer;
     background-color: #8eb5cf;
     margin-right: 0.5rem;

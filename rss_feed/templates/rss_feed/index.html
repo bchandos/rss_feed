@@ -36,9 +36,15 @@
     <a id="no_style" href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}?sort={{ sort_order_opp }}">
         <div id="sort_order">Sort {{ sort_order_opp }}</div>
     </a>
+    <a id="no_style" href="{{ url_for('rss_feed.bookmarked_index', feed_id=feed_id) }}">
+        <div id="bookmark">Feed Bookmarks</div>
+    </a>
     {% else %}
     <a id="no_style" href="{{ url_for('rss_feed.index') }}?sort={{ sort_order_opp }}">
         <div id="sort_order">Sort {{ sort_order_opp }}</div>
+    </a>
+    <a id="no_style" href="{{ url_for('rss_feed.bookmarked_index') }}">
+        <div id="bookmark">Bookmarks</div>
     </a>
     {% endif %}
 </div>
