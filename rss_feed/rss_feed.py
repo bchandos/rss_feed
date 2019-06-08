@@ -15,6 +15,27 @@ from rss_feed.db import get_db
 bp = Blueprint('rss_feed', __name__)
 
 
+def query_items(db, user_id, order='DESC', feed_id=None, bookmarks_only=False):
+    query_augment = ''
+    if feed_id:
+        query_augment += 'AND items.feed_id = ? '
+        query_vars = (user_id, user_id, feed_id)
+    else:
+        query_vars = (user_id, user_id)
+    if bookmarks_only:
+        query_augment += 'AND user_items.bookmark = 1 '
+    query_augment += f'ORDER BY items.publication_date {order}'
+    return db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, '
+                      'items.link, items.description, items.publication_date, '
+                      'items.guid, user_feeds.user_id, user_items.read, user_items.bookmark '
+                       'FROM items '
+                       'INNER JOIN feeds ON items.feed_id = feeds.id '
+                       'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
+                       'INNER JOIN user_items on items.id = user_items.item_id '
+                       'WHERE user_feeds.user_id = ? AND user_items.user_id = ? '
+                       + query_augment, query_vars).fetchall()
+
+
 @bp.route('/', defaults={'sort': 'Descending'})
 @login_required
 def index(sort):
@@ -24,20 +45,13 @@ def index(sort):
     if sort_param:
         sort = sort_param
     if sort == 'Ascending':
-        order_by = 'ORDER BY items.publication_date ASC'
+        order_by = 'ASC'
         sort_order_opp = 'Descending'
     else:
-        order_by = 'ORDER BY items.publication_date DESC'
+        order_by = 'DESC'
         sort_order_opp = 'Ascending'
-    items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, '
-                       'items.link, items.description, items.publication_date, '
-                       'items.guid, user_feeds.user_id, user_items.read, user_items.bookmark '
-                       'FROM items '
-                       'INNER JOIN feeds ON items.feed_id = feeds.id '
-                       'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
-                       'INNER JOIN user_items on items.id = user_items.item_id '
-                       'WHERE user_feeds.user_id = ? AND user_items.user_id = ? '
-                       + order_by, (user_id, user_id)).fetchall()
+    items = query_items(db=db, user_id=user_id, order=order_by)
+
     return render_template('rss_feed/index.html', items=items, sort_order_opp=sort_order_opp)
 
 
@@ -50,26 +64,42 @@ def feed_index(feed_id, sort):
     if sort_param:
         sort = sort_param
     if sort == 'Ascending':
-        order_by = 'ORDER BY items.publication_date ASC'
+        order_by = 'ASC'
         sort_order_opp = 'Descending'
     else:
-        order_by = 'ORDER BY items.publication_date DESC'
+        order_by = 'DESC'
         sort_order_opp = 'Ascending'
     feed_name = db.execute(
         'SELECT feed_name FROM feeds WHERE id = ?', (feed_id,)).fetchone()['feed_name']
-    items = db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, '
-                       'items.link, items.description, items.publication_date, '
-                       'items.guid, user_feeds.user_id, user_items.read '
-                       'FROM items '
-                       'INNER JOIN feeds ON items.feed_id = feeds.id '
-                       'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
-                       'INNER JOIN user_items on items.id = user_items.item_id '
-                       'WHERE user_feeds.user_id = ? '
-                       'AND user_items.user_id = ? '
-                       'AND items.feed_id = ? '
-                       + order_by, (user_id, user_id, feed_id)).fetchall()
+    items = query_items(db=db, user_id=user_id, order=order_by, feed_id=feed_id)
+
     return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id, sort_order_opp=sort_order_opp)
 
+
+@bp.route('/bookmarks', defaults={'feed_id': None, 'sort': 'Descending'})
+@bp.route('/<int:feed_id>/bookmarks', defaults={'sort': 'Descending'})
+@login_required
+def bookmarked_index(feed_id, sort):
+    db = get_db()
+    user_id = g.user['id']
+    sort_param = request.args.get('sort', None)
+    
+    if sort_param:
+        sort = sort_param
+    if sort == 'Ascending':
+        order_by = 'ASC'
+        sort_order_opp = 'Descending'
+    else:
+        order_by = 'DESC'
+        sort_order_opp = 'Ascending'
+    if feed_id:
+        feed_name = db.execute(
+        'SELECT feed_name FROM feeds WHERE id = ?', (feed_id,)).fetchone()['feed_name']
+        items = query_items(db=db, user_id=user_id, order=order_by, feed_id=feed_id, bookmarks_only=True)
+        return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id, sort_order_opp=sort_order_opp)
+    else:
+        items = query_items(db=db, user_id=user_id, order=order_by, bookmarks_only=True)
+        return render_template('rss_feed/index.html', items=items, sort_order_opp=sort_order_opp)
 
 @bp.route('/add_feed', methods=('GET', 'POST'))
 @login_required
