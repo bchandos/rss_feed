@@ -36,15 +36,13 @@ def query_items(db, user_id, order='DESC', feed_id=None, bookmarks_only=False):
                        + query_augment, query_vars).fetchall()
 
 
-@bp.route('/', defaults={'sort': 'Descending'})
+@bp.route('/')
 @login_required
-def index(sort):
+def index():
     db = get_db()
     user_id = g.user['id']
     sort_param = request.args.get('sort', None)
-    if sort_param:
-        sort = sort_param
-    if sort == 'Ascending':
+    if sort_param == 'Ascending':
         order_by = 'ASC'
         sort_order_opp = 'Descending'
     else:
@@ -55,15 +53,13 @@ def index(sort):
     return render_template('rss_feed/index.html', items=items, sort_order_opp=sort_order_opp)
 
 
-@bp.route('/<int:feed_id>', defaults={'sort': 'Descending'})
+@bp.route('/<int:feed_id>')
 @login_required
-def feed_index(feed_id, sort):
+def feed_index(feed_id):
     db = get_db()
     user_id = g.user['id']
     sort_param = request.args.get('sort', None)
-    if sort_param:
-        sort = sort_param
-    if sort == 'Ascending':
+    if sort_param == 'Ascending':
         order_by = 'ASC'
         sort_order_opp = 'Descending'
     else:
@@ -76,17 +72,14 @@ def feed_index(feed_id, sort):
     return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id, sort_order_opp=sort_order_opp)
 
 
-@bp.route('/bookmarks', defaults={'feed_id': None, 'sort': 'Descending'})
-@bp.route('/<int:feed_id>/bookmarks', defaults={'sort': 'Descending'})
+@bp.route('/bookmarks', defaults={'feed_id': None})
+@bp.route('/<int:feed_id>/bookmarks')
 @login_required
-def bookmarked_index(feed_id, sort):
+def bookmarked_index(feed_id):
     db = get_db()
     user_id = g.user['id']
-    sort_param = request.args.get('sort', None)
-    
-    if sort_param:
-        sort = sort_param
-    if sort == 'Ascending':
+    sort_param = request.args.get('sort', None)  
+    if sort_param == 'Ascending':
         order_by = 'ASC'
         sort_order_opp = 'Descending'
     else:

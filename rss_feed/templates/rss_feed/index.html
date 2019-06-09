@@ -33,14 +33,14 @@
 <div class="feed_controls">
     <div id="show_read">Show Read</div>
     {% if feed_name %}
-    <a id="no_style" href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}?sort={{ sort_order_opp }}">
+    <a id="no_style" href="{{ url_for(request.url_rule.endpoint, feed_id=feed_id, sort=sort_order_opp) }}">
         <div id="sort_order">Sort {{ sort_order_opp }}</div>
     </a>
     <a id="no_style" href="{{ url_for('rss_feed.bookmarked_index', feed_id=feed_id) }}">
         <div id="bookmark">Feed Bookmarks</div>
     </a>
     {% else %}
-    <a id="no_style" href="{{ url_for('rss_feed.index') }}?sort={{ sort_order_opp }}">
+    <a id="no_style" href="{{ url_for(request.url_rule.endpoint, sort=sort_order_opp) }}">
         <div id="sort_order">Sort {{ sort_order_opp }}</div>
     </a>
     <a id="no_style" href="{{ url_for('rss_feed.bookmarked_index') }}">
@@ -49,7 +49,9 @@
     {% endif %}
 </div>
 {% if feed_name %}
-<a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">Edit Settings for {{ feed_name }}</a>
+<a href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}">{{ feed_name }}</a>
+<a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}"><img class="icon"
+        src="{{ url_for('static', filename='icons/settings.png') }}" alt="Feed Settings" /></a>
 {% endif %}
 <script type="text/javascript" src="{{ url_for('static', filename='mark_read.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='show_hide.js') }}"></script>
