@@ -4,25 +4,25 @@
 <h1>{% block title %}News Feed Items{% endblock %}</h1>
 {% if g.user %}
 <a class="action" href="{{ url_for('rss_feed.add_feed') }}">
-    <img class="icon" src="{{ url_for('static', filename='icons/add_feed.png') }}" alt="Add New Feed" />
+    <img class="icon" src="{{ url_for('static', filename='icons/add-feed-icon.svg') }}" alt="Add New Feed" />
     <span class="action-text">Add New Feed</span>
 </a>
 {% if feed_name %}
 <a class="action" href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}">
-    <img class="icon" src="{{ url_for('static', filename='icons/refresh_feeds.png') }}" alt="Refresh Feed" />
+    <img class="icon" src="{{ url_for('static', filename='icons/refresh-feeds-icon.svg') }}" alt="Refresh Feed" />
     <span class="action-text">Refresh Feed</span>
 </a>
 <a class="action" href="{{ url_for('rss_feed.mark_read_all', feed_id=feed_id) }}">
-    <img class="icon" src="{{ url_for('static', filename='icons/mark_read.png') }}" alt="Mark Feed Read" />
+    <img class="icon" src="{{ url_for('static', filename='icons/mark-read-icon.svg') }}" alt="Mark Feed Read" />
     <span class="action-text">Mark Feed Read</span>
 </a>
 {% else %}
 <a class="action" href="{{ url_for('rss_feed.get_items') }}">
-    <img class="icon" src="{{ url_for('static', filename='icons/refresh_feeds.png') }}" alt="Refresh All Feeds" />
+    <img class="icon" src="{{ url_for('static', filename='icons/refresh-feeds-icon.svg') }}" alt="Refresh All Feeds" />
     <span class="action-text">Refresh All Feeds</span>
 </a>
 <a class="action" href="{{ url_for('rss_feed.mark_read_all') }}">
-    <img class="icon" src="{{ url_for('static', filename='icons/mark_read.png') }}" alt="Mark All Read" />
+    <img class="icon" src="{{ url_for('static', filename='icons/mark-read-icon.svg') }}" alt="Mark All Read" />
     <span class="action-text">Mark All Read</span>
 </a>
 {% endif %}
@@ -51,7 +51,7 @@
 {% if feed_name %}
 <a href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}">{{ feed_name }}</a>
 <a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}"><img class="icon"
-        src="{{ url_for('static', filename='icons/settings.png') }}" alt="Feed Settings" /></a>
+        src="{{ url_for('static', filename='icons/settings-icon.svg') }}" alt="Feed Settings" /></a>
 {% endif %}
 <script type="text/javascript" src="{{ url_for('static', filename='mark_read.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='show_hide.js') }}"></script>
@@ -62,10 +62,10 @@
     <header>
         <div>
             {% if item['bookmark'] %}
-            <img class="bookmark marked" src="{{ url_for('static', filename='icons/bookmark-red.png') }}"
+            <img class="bookmark marked" src="{{ url_for('static', filename='icons/bookmark-red-icon.svg') }}"
                 id="bm-{{ item['id'] }}" />
             {% else %}
-            <img class="bookmark unmarked" src="{{ url_for('static', filename='icons/bookmark.png') }}"
+            <img class="bookmark unmarked" src="{{ url_for('static', filename='icons/bookmark-icon.svg') }}"
                 id="bm-{{ item['id'] }}" />
             {% endif %}
             <a href="{{ item['link'] }}">

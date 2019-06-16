@@ -2,14 +2,14 @@
 <html lang="en">
 <title>{% block title %}{% endblock %} - RSS Feed</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" href="{{ url_for('static', filename='icons/32x32.png') }}">
+<link rel="icon" href="{{ url_for('static', filename='icons/rss-feed-icon.svg') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
 <script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
 <script type="text/javascript">$SCRIPT_ROOT = {{ request.script_root | tojson | safe }};</script>
 <nav>
     <a href="{{ url_for('rss_feed.index') }}">
-        <img id="logo" src="{{ url_for('static', filename='icons/256x256.png') }}" alt="RSS Feed" />
+        <img id="logo" src="{{ url_for('static', filename='icons/rss-feed-icon.svg') }}" alt="RSS Feed" />
     </a>
     <ul>
         {% if g.user %}

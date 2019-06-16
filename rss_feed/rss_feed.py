@@ -256,12 +256,12 @@ def bookmark():
             db.execute(
                 'UPDATE user_items SET bookmark = 0 WHERE item_id = ? AND user_id = ?', (id, user_id))
             bm = 'false'
-            u = url_for('static', filename='icons/bookmark.png')
+            u = url_for('static', filename='icons/bookmark-icon.svg')
         else:
             db.execute(
                 'UPDATE user_items SET bookmark = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
             bm = 'true'
-            u = url_for('static', filename='icons/bookmark-red.png')
+            u = url_for('static', filename='icons/bookmark-red-icon.svg')
         db.commit()
         return jsonify(id=id, bookmark=bm, u=u)
 
