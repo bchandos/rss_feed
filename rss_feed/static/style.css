@@ -152,6 +152,7 @@ a#no_style:link, a#no_style:visited, a#no_style:hover, a#no_style:active {
 
 #logo {
     max-width: 2rem;
+    padding: 0.25rem;
 }
 
 .item .about {
