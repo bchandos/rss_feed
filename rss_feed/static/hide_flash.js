@@ -1,3 +1,3 @@
-$(".flash").click(function () {
-    $(this).hide();
+$(".flash_close").click(function () {
+    $(".flash").hide();
 });

@@ -26,7 +26,12 @@
         {% block header %}{% endblock %}
     </header>
     {% for message in get_flashed_messages() %}
-    <div class="flash">{{ message }}</div>
+    <div class="flash">
+        {{ message }}
+        <a href="" class="flash_close">
+            <img class="icon" src="{{ url_for('static', filename='icons/close-icon.svg') }}">
+        </a>
+    </div>
     {% endfor %}
     <script type="text/javascript" src="{{ url_for('static', filename='hide_flash.js') }}"></script>
     {% block content %}{% endblock %}

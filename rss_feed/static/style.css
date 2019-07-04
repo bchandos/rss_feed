@@ -91,6 +91,10 @@ div.feed_controls {
     border: 1px solid #377ba8;
 }
 
+.flash img {
+    float: right;
+}
+
 .notice {
     margin: 1em 0;
     padding: 1em;
