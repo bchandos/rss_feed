@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 from urllib.parse import urlparse
 from urllib.request import urlopen
+from urllib.error import URLError, HTTPError
 from datetime import datetime
 import re
 
@@ -67,7 +68,8 @@ def feed_index(feed_id):
         sort_order_opp = 'Ascending'
     feed_name = db.execute(
         'SELECT feed_name FROM feeds WHERE id = ?', (feed_id,)).fetchone()['feed_name']
-    items = query_items(db=db, user_id=user_id, order=order_by, feed_id=feed_id)
+    items = query_items(db=db, user_id=user_id,
+                        order=order_by, feed_id=feed_id)
 
     return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id, sort_order_opp=sort_order_opp)
 
@@ -78,7 +80,7 @@ def feed_index(feed_id):
 def bookmarked_index(feed_id):
     db = get_db()
     user_id = g.user['id']
-    sort_param = request.args.get('sort', None)  
+    sort_param = request.args.get('sort', None)
     if sort_param == 'Ascending':
         order_by = 'ASC'
         sort_order_opp = 'Descending'
@@ -88,11 +90,14 @@ def bookmarked_index(feed_id):
     if feed_id:
         feed_name = db.execute(
         'SELECT feed_name FROM feeds WHERE id = ?', (feed_id,)).fetchone()['feed_name']
-        items = query_items(db=db, user_id=user_id, order=order_by, feed_id=feed_id, bookmarks_only=True)
+        items = query_items(db=db, user_id=user_id, order=order_by,
+                            feed_id=feed_id, bookmarks_only=True)
         return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id, sort_order_opp=sort_order_opp)
     else:
-        items = query_items(db=db, user_id=user_id, order=order_by, bookmarks_only=True)
+        items = query_items(db=db, user_id=user_id,
+                            order=order_by, bookmarks_only=True)
         return render_template('rss_feed/index.html', items=items, sort_order_opp=sort_order_opp)
+
 
 @bp.route('/add_feed', methods=('GET', 'POST'))
 @login_required
@@ -109,12 +114,15 @@ def add_feed():
         else:
             # validate feed and gather feed name
             u = urlparse(feed_url, scheme='http')
-            with urlopen(u.geturl()) as f:
-                if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
-                    root = ET.fromstring(f.read())
-                    feed_name = root[0].find('title').text
-                else:
-                    abort(404, f'Invalid feed URL ({feed_url}).')
+            try:
+                with urlopen(u.geturl()) as f:
+                    if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
+                        root = ET.fromstring(f.read())
+                        feed_name = root[0].find('title').text
+                    else:
+                        abort(404, f'Invalid feed URL ({feed_url}). Code {f.getcode()}.')
+            except (URLError, HTTPError) as err:
+                abort(404, f'URL ({feed_url}) could not be opened. Error: {err}.')
 
             db = get_db()
             feed_id = db.execute(
