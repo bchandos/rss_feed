@@ -28,5 +28,6 @@
     {% for message in get_flashed_messages() %}
     <div class="flash">{{ message }}</div>
     {% endfor %}
+    <script type="text/javascript" src="{{ url_for('static', filename='hide_flash.js') }}"></script>
     {% block content %}{% endblock %}
 </section>

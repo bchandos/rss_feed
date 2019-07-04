@@ -305,3 +305,12 @@ def all_unread():
     db.execute('UPDATE user_items SET read = 0 WHERE user_id = ?', (user_id,))
     db.commit()
     return redirect(url_for('rss_feed.index'))
+
+
+@bp.route('/__testflash')
+@login_required
+@debug_only
+def test_flash():
+    # debugging endpoint to test flash messaging
+    flash('This is a test of the flash system.')
+    return redirect(url_for('rss_feed.index'))
