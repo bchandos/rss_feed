@@ -5,6 +5,7 @@
     "start_url": "/",
     "background_color": "#99e1d9",
     "theme_color": "#3b8ea3",
+    "display": "standalone",
     "icons": [
         {
             "src": "rss-feed-icon.svg",
