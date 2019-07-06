@@ -28,11 +28,10 @@
     {% for message in get_flashed_messages() %}
     <div class="flash">
         {{ message }}
-        <a href="" class="flash_close">
+        <span class="closebtn" onclick="this.parentElement.style.display='none';">
             <img class="icon" src="{{ url_for('static', filename='icons/close-icon.svg') }}">
-        </a>
+        </span>
     </div>
     {% endfor %}
-    <script type="text/javascript" src="{{ url_for('static', filename='hide_flash.js') }}"></script>
     {% block content %}{% endblock %}
 </section>
