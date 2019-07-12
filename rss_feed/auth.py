@@ -37,6 +37,7 @@ def register():
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
     if request.method == 'POST':
+        attempt = session.get('login_attempt', 0)
         username = request.form['username']
         password = request.form['password']
         db = get_db()
@@ -44,9 +45,14 @@ def login():
         user = db.execute(
             'SELECT * FROM user WHERE username = ?', (username,)).fetchone()
         if not user:
-            error = 'Incorrect username.'
+            error = 'Incorrect username or password.'
+            attempt += 1
         elif not check_password_hash(user['password'], password):
-            error = 'Incorrect password.'
+            error = 'Incorrect username or password.'
+            attempt += 1
+        session['login_attempt'] = attempt
+        if attempt > 3:
+            error = 'Excessive login attempts. Please wait several hours, you rube.'
 
         if not error:
             session.clear()
