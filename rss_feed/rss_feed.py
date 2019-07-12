@@ -127,7 +127,6 @@ def add_feed():
             db = get_db()
             feed_id = db.execute(
                 'INSERT INTO feeds (feed_url, feed_name) VALUES (?, ?)', (feed_url, feed_name)).lastrowid
-            # TODO figure out if lastrowid method is possible
             db.execute(
                 'INSERT INTO user_feeds (user_id, feed_id) VALUES (?, ?)', (g.user['id'], feed_id))
             db.commit()
@@ -246,14 +245,20 @@ def mark_read():
     id = request.args.get('id', 0, type=int)
     db = get_db()
     if id:
-        db.execute(
-            'UPDATE user_items SET read = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
+        read_status = db.execute('SELECT read FROM user_items WHERE item_id = ? AND user_id = ?', (id, user_id)).fetchone()
+        if read_status['read'] == 0:
+            db.execute(
+                'UPDATE user_items SET read = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
+            new_status = 'Read'
+        else:
+            db.execute(
+                'UPDATE user_items SET read = 0 WHERE item_id = ? AND user_id = ?', (id, user_id))
+            new_status = 'Unread'
         db.commit()
-        return jsonify(id=id, read='Read')
+        return jsonify(id=id, read=new_status)
 
 
 @bp.route('/_bookmark')
-# TODO make this toggle
 def bookmark():
     user_id = g.user['id']
     id = request.args.get('id', 0, type=int)

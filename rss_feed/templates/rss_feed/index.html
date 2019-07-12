@@ -76,7 +76,7 @@
         </div>
     </header>
     <p class="body">{{ item['description']|safe }}</p>
-    <div class="marker" id="mr-{{ item['id'] }}">Mark Read</div>
+    <div class="marker" id="mr-{{ item['id'] }}">Mark {% if item.read %}Unr{% else %}R{% endif %}ead</div>
     <hr>
 </article>
 {% endfor %}
