@@ -16,7 +16,7 @@ from rss_feed.db import get_db
 bp = Blueprint('rss_feed', __name__)
 
 
-def query_items(db, user_id, order='DESC', feed_id=None, bookmarks_only=False):
+def query_items(db, user_id, order='DESC', limit=100, offset=0, feed_id=None, bookmarks_only=False):
     query_augment = ''
     if feed_id:
         query_augment += 'AND items.feed_id = ? '
@@ -25,7 +25,7 @@ def query_items(db, user_id, order='DESC', feed_id=None, bookmarks_only=False):
         query_vars = (user_id, user_id)
     if bookmarks_only:
         query_augment += 'AND user_items.bookmark = 1 '
-    query_augment += f'ORDER BY items.publication_date {order} LIMIT 100'
+    query_augment += f'ORDER BY items.publication_date {order} LIMIT {limit} OFFSET {offset}'
     return db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, '
                       'items.link, items.description, items.publication_date, '
                       'items.guid, user_feeds.user_id, user_items.read, user_items.bookmark '
