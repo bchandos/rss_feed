@@ -1,47 +1,36 @@
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean
+from flask_sqlalchemy import SQLAlchemy
 
-Base = declarative_base()
+db = SQLAlchemy()
 
-class User(Base):
-    __tablename__ = 'user'
-
-    id = Column(Integer, primary_key=True)
-    username = Column(String)
-    password = Column(String)
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String)
+    password = db.Column(db.String)
 
 
-class Feed(Base):
-    __tablename__ = 'feed'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String)
-    url = Column(String)
+class Feed(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    url = db.Column(db.String)
 
     items = relationship('Item', backref='feed', order_by='Item.publication_date')
 
-class Item(Base):
-    __tablename__ = 'item'
+class Item(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    feed_id = db.Column(db.ForeignKey('feed.id'))
+    title = db.Column(db.String)
+    link = db.Column(db.String)
+    description = db.Column(db.String)
+    publication_date = db.Column(db.String)
+    guid = db.Column(db.String, unique=True)
 
-    id = Column(Integer, primary_key=True)
-    feed_id = Column(ForeignKey('feed.id'))
-    title = Column(String)
-    link = Column(String)
-    description = Column(String)
-    publication_date = Column(String)
-    guid = Column(String, unique=True)
+class UserFeed(db.Model):
+    user_id = db.Column(db.ForeignKey('user.id'), primary_key=True)
+    feed_id = db.Column(db.ForeignKey('feed.id'), primary_key=True)
+    user_feed_name = db.Column(db.String)
 
-class UserFeed(Base):
-    __tablename__ = 'user_feed'
-
-    user_id = Column(ForeignKey('user.id'), primary_key=True)
-    feed_id = Column(ForeignKey('feed.id'), primary_key=True)
-    user_feed_name = Column(String)
-
-class UserItem(Base):
-    __tablename__ = 'user_item'
-    user_id = Column(ForeignKey('user.id'), primary_key=True)
-    item_id = Column(ForeignKey('item.id'), primary_key=True)
-    read = Column(Boolean)
-    bookmark = Column(Boolean)
+class UserItem(db.Model):
+    user_id = db.Column(db.ForeignKey('user.id'), primary_key=True)
+    item_id = db.Column(db.ForeignKey('item.id'), primary_key=True)
+    read = db.Column(db.Boolean)
+    bookmark = db.Column(db.Boolean)
