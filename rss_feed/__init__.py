@@ -44,5 +44,7 @@ def create_app(test_config=None):
 def init_db_command():
     """Clear the existing data and create new tables."""
     db.drop_all()
+    db.session.commit()
     db.create_all()
+    db.session.commit()
     click.echo('Initialized the database.')
