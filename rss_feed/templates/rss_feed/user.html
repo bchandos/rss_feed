@@ -8,7 +8,7 @@
 
 <div class="rtable">
     {% for user_feed in users_feeds %}
-    <div class="rtable-cell rtable-left">{{ user_feed['feed_name'] }}</div>
+    <div class="rtable-cell rtable-left">{{ user_feed['name'] }}</div>
     <div class="rtable-cell rtable-center"><a href="{{ url_for('rss_feed.edit_feed', id=user_feed['id']) }}"><img
                 class="icon" src="{{ url_for('static', filename='icons/edit-icon.svg') }}"></a></div>
     <div class="rtable-cell rtable-right">

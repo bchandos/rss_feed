@@ -11,6 +11,7 @@ from werkzeug.exceptions import abort
 from dateutil.parser import parse
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import null
 
 from rss_feed.auth import login_required, debug_only
 from rss_feed.models import User, Feed, UserFeed, UserItem, Item, db
@@ -19,30 +20,15 @@ bp = Blueprint('rss_feed', __name__)
 
 
 def query_items(db, user_id, order='DESC', limit=100, offset=0, feed_id=None, bookmarks_only=False):
-    q = Item.query.join(Feed).join(UserFeed).join(UserItem)
-    return q.filter(UserFeed.user_id==user_id, UserItem.user_id==user_id).all()
+    q = db.session.query(Item, Feed, UserItem).join(Feed).join(UserFeed).join(UserItem)
+    bm_options = [True] if bookmarks_only else []
+        
+    return q.filter(UserFeed.user_id==user_id, 
+                    UserItem.user_id==user_id,
+                    UserItem.bookmark.in_(bm_options)).\
+                    order_by(Item.publication_date.desc()).\
+                    limit(limit).offset(offset).all()
     
-    
-    
-    # query_augment = ''
-    # if feed_id:
-    #     query_augment += 'AND items.feed_id = ? '
-    #     query_vars = (user_id, user_id, feed_id)
-    # else:
-    #     query_vars = (user_id, user_id)
-    # if bookmarks_only:
-    #     query_augment += 'AND user_items.bookmark = 1 '
-    # query_augment += f'ORDER BY items.publication_date {order} LIMIT {limit} OFFSET {offset}'
-    # return db.execute('SELECT items.id, feeds.feed_name, items.feed_id, items.title, '
-    #                   'items.link, items.description, items.publication_date, '
-    #                   'items.guid, user_feeds.user_id, user_items.read, user_items.bookmark '
-    #                    'FROM items '
-    #                    'INNER JOIN feeds ON items.feed_id = feeds.id '
-    #                    'INNER JOIN user_feeds on items.feed_id = user_feeds.feed_id '
-    #                    'INNER JOIN user_items on items.id = user_items.item_id '
-    #                    'WHERE user_feeds.user_id = ? AND user_items.user_id = ? '
-    #                    + query_augment, query_vars).fetchall()
-
 
 @bp.route('/')
 @login_required
@@ -64,7 +50,6 @@ def index():
 @bp.route('/<int:feed_id>')
 @login_required
 def feed_index(feed_id):
-    #
     user_id = g.user.id
     sort_param = request.args.get('sort', None)
     if sort_param == 'Ascending':
@@ -74,8 +59,6 @@ def feed_index(feed_id):
         order_by = 'DESC'
         sort_order_opp = 'Ascending'
     feed_name = Feed.query.get(feed_id).name
-    # feed_name = db.execute(
-        # 'SELECT feed_name FROM feeds WHERE id = ?', (feed_id,)).fetchone()['feed_name']
     items = query_items(db=db, user_id=user_id,
                         order=order_by, feed_id=feed_id)
 
@@ -96,8 +79,7 @@ def bookmarked_index(feed_id):
         order_by = 'DESC'
         sort_order_opp = 'Ascending'
     if feed_id:
-        feed_name = db.execute(
-        'SELECT feed_name FROM feeds WHERE id = ?', (feed_id,)).fetchone()['feed_name']
+        feed_name = Feed.query.get(feed_id).name
         items = query_items(db=db, user_id=user_id, order=order_by,
                             feed_id=feed_id, bookmarks_only=True)
         return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id, sort_order_opp=sort_order_opp)
@@ -162,12 +144,13 @@ def edit_feed(id):
         feed_url = request.form['feed_url']
         if request.form['feed_name'] != feed['feed_name']:
             custom_name = request.form['custom_name']
-        
-        db.execute('UPDATE feeds SET feed_url = ? WHERE id = ?', (feed_url, id))
+        feed.url = feed_url
+        db.session.add(feed)
         if custom_name:
-            db.execute('UPDATE user_feeds SET user_feed_name = ? WHERE user_id = ? AND feed_id = ?', (
-                custom_name, g.user.id, id))
-        db.commit()
+            uf = UserFeed.query.filter(user_id==g.user.id, feed_id==id)
+            uf.user_feed_name = custom_name
+            db.session.add(uf)
+        db.session.commit()
         return redirect(url_for('rss_feed.index'))
     return render_template('rss_feed/edit.html', feed=feed)
 
@@ -176,24 +159,18 @@ def edit_feed(id):
 @login_required
 def user_menu():
     user_id = g.user.id
-    
-    users_feeds = db.execute('SELECT feeds.feed_name, feeds.id, user_feeds.user_id '
-                             'FROM feeds '
-                             'INNER JOIN user_feeds ON user_feeds.feed_id = feeds.id '
-                             'WHERE user_feeds.user_id = ?', (user_id,)
-                             ).fetchall()
+    users_feeds = Feed.query.join(UserFeed).filter(Feed.id.in_(g.user_feed_group)).all()
     return render_template('rss_feed/user.html', users_feeds=users_feeds)
 
 
 @bp.route('/<int:id>/delete', methods=('POST',))
 @login_required
 def delete_feed(id):
-    
-    db.execute('DELETE FROM feeds WHERE id = ?', (id,))
-    db.execute(
-        'DELETE FROM user_feeds WHERE feed_id = ? AND user_id = ?', (id, g.user.id))
-    db.execute('DELETE FROM items WHERE feed_id = ?', (id,))
-    db.commit()
+    feed_name = Feed.query.get(id).name
+    user_feed = UserFeed.query.filter(UserFeed.feed_id==id).first()
+    db.session.delete(user_feed)
+    db.session.commit()
+    flash(f'Feed {feed_name} deleted.')
     return redirect(url_for('rss_feed.index'))
 
 
@@ -220,7 +197,6 @@ def get_items(feed_id):
 
 
 def download_items(url, feed_id, user_id):
-    
     with urlopen(url) as f:
         if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
             xml_file = ET.fromstring(f.read())
@@ -235,17 +211,20 @@ def download_items(url, feed_id, user_id):
                 else:
                     publication_date = datetime.timestamp(datetime.today())
                 guid = item.find('guid').text
-                new_item = Item(feed_id=feed_id, title=title, link=link, description=description, publication_date=publication_date, guid=guid)
-                db.session.add(new_item)
+                item_exists = Item.query.filter(Item.guid==guid).first()
+                if not item_exists:
+                    # Only create item if it doesn't exist
+                    new_item = Item(feed_id=feed_id, title=title, link=link, description=description, publication_date=publication_date, guid=guid)
+                    db.session.add(new_item)
+                    db.session.commit()
+                    new_ui = UserItem(user_id=user_id, item_id=new_item.id)
+                    db.session.add(new_ui)
+                else:
+                    # Only create user_item if it doesn't exist
+                    if not UserItem.query.filter(user_id==user_id, item_id==exists.id).first():
+                        new_ui = UserItem(user_id=user_id, item_id=exists.id)
+                        db.session.add(new_ui)
                 db.session.commit()
-                # item_id = db.execute('INSERT OR IGNORE INTO items (feed_id, title, link, description, publication_date, guid) VALUES (?, ?, ?, ?, ?, ?)',
-                #                      (feed_id, title, link, description, publication_date, guid)).lastrowid
-                new_ui = UserItem(user_id=user_id, item_id=new_item.id)
-                db.session.add(new_ui)
-                db.session.commit()
-            #     db.execute(
-            #         'INSERT OR IGNORE INTO user_items (user_id, item_id, read) VALUES (?, ?, 0)', (user_id, item_id))
-            # db.commit()
 
 
 @bp.app_template_filter()
@@ -259,18 +238,20 @@ def datetimeformat(value, format='%m-%d-%Y @ %H:%M'):
 def mark_read():
     user_id = g.user.id
     id = request.args.get('id', 0, type=int)
-    
     if id:
-        read_status = db.execute('SELECT read FROM user_items WHERE item_id = ? AND user_id = ?', (id, user_id)).fetchone()
-        if read_status['read'] == 0:
-            db.execute(
-                'UPDATE user_items SET read = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
+        user_item = UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==id).first()
+        if user_item.read == 0:
+            user_item.read = True
+            # db.execute(
+            #     'UPDATE user_items SET read = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
             new_status = 'Read'
         else:
-            db.execute(
-                'UPDATE user_items SET read = 0 WHERE item_id = ? AND user_id = ?', (id, user_id))
+            user_item.read = False
+            # db.execute(
+            #     'UPDATE user_items SET read = 0 WHERE item_id = ? AND user_id = ?', (id, user_id))
             new_status = 'Unread'
-        db.commit()
+        db.session.add(user_item)
+        db.session.commit()
         return jsonify(id=id, read=new_status)
 
 
@@ -281,17 +262,21 @@ def bookmark():
     marked = request.args.get('marked', 'false', type=str)
     
     if id:
+        user_item = UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==id).first()
         if marked == 'true':
-            db.execute(
-                'UPDATE user_items SET bookmark = 0 WHERE item_id = ? AND user_id = ?', (id, user_id))
+            user_item.bookmark = False
+            # db.execute(
+            #     'UPDATE user_items SET bookmark = 0 WHERE item_id = ? AND user_id = ?', (id, user_id))
             bm = 'false'
             u = url_for('static', filename='icons/bookmark-icon.svg')
         else:
-            db.execute(
-                'UPDATE user_items SET bookmark = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
+            user_item.bookmark = True
+            # db.execute(
+            #     'UPDATE user_items SET bookmark = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
             bm = 'true'
             u = url_for('static', filename='icons/bookmark-red-icon.svg')
-        db.commit()
+        db.session.add(user_item)
+        db.session.commit()
         return jsonify(id=id, bookmark=bm, u=u)
 
 
@@ -302,17 +287,18 @@ def mark_read_all(feed_id):
     user_id = g.user.id
     
     if not feed_id:
-        db.execute(
-            'UPDATE user_items SET read = 1 WHERE user_id = ?', (user_id,))
-        db.commit()
+        Item.query.filter(user_id==user_id).update({'read': True})
+        # db.execute(
+        #     'UPDATE user_items SET read = 1 WHERE user_id = ?', (user_id,))
+        db.session.commit()
         return redirect(url_for('rss_feed.index'))
     else:
-        UserItem.query.filter(Item.feed_id==feed.id, UserItem.user_id==user_id).update({'read': 1})
+        UserItem.query.filter(Item.feed_id==feed.id, UserItem.user_id==user_id).update({'read': True})
         # all_items = db.execute(
         #     'SELECT id FROM items WHERE feed_id = ?', (feed_id,)).fetchall()
-        for item in all_items:
-            db.execute(
-                'UPDATE user_items SET read = 1 WHERE item_id = ? AND user_id = ?', (item['id'], user_id))
+        # for item in all_items:
+        #     db.execute(
+        #         'UPDATE user_items SET read = 1 WHERE item_id = ? AND user_id = ?', (item['id'], user_id))
         db.session.commit()
         return redirect(url_for('rss_feed.feed_index', feed_id=feed_id))
 

@@ -37,5 +37,5 @@ class UserItem(db.Model):
     __tablename__ = 'user_item'
     user_id = db.Column(db.ForeignKey('user.id'), primary_key=True)
     item_id = db.Column(db.ForeignKey('item.id'), primary_key=True)
-    read = db.Column(db.Boolean)
-    bookmark = db.Column(db.Boolean)
+    read = db.Column(db.Boolean, default=False)
+    bookmark = db.Column(db.Boolean, default=False)
