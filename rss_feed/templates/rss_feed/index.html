@@ -56,30 +56,29 @@
 <script type="text/javascript" src="{{ url_for('static', filename='mark_read.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='show_hide.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='bookmark.js') }}"></script>
-{% if items %}
 {% for item in items %}
-<article class="item {% if item.read %}read invisible{% else %}unread{% endif %}" id="{{ item['id'] }}">
+<article class="item {% if item.UserItem.read %}read invisible{% else %}unread{% endif %}" id="{{ item.Item.id }}">
     <header>
         <div>
-            {% if item['bookmark'] %}
+            {% if item.UserItem.bookmark %}
             <img class="bookmark marked" src="{{ url_for('static', filename='icons/bookmark-red-icon.svg') }}"
-                id="bm-{{ item['id'] }}" />
+                id="bm-{{ item.Item.id }}" />
             {% else %}
             <img class="bookmark unmarked" src="{{ url_for('static', filename='icons/bookmark-icon.svg') }}"
-                id="bm-{{ item['id'] }}" />
+                id="bm-{{ item.Item.id }}" />
             {% endif %}
-            <a href="{{ item['link'] }}">
-                <h1>{{ item['title'] }}</h1>
+            <a href="{{ item.Item.link }}">
+                <h1>{{ item.Item.title }}</h1>
             </a>
-            <div class="about">from <a href="/{{ item['feed_id'] }}">{{ item['feed_name'] }}</a> on {{
-                item['publication_date']|datetimeformat }}</div>
+            <div class="about">from <a href="/{{ item.Item.feed_id }}">{{ item.Feed.name }}</a> on {{
+                item.Item.publication_date|datetimeformat }}</div>
         </div>
     </header>
-    <p class="body">{{ item['description']|safe }}</p>
-    <div class="marker" id="mr-{{ item['id'] }}">Mark {% if item.read %}Unr{% else %}R{% endif %}ead</div>
+    <p class="body">{{ item.Item.description|safe|truncate }}</p>
+    <div class="marker" id="mr-{{ item.Item.id }}">Mark {% if item.UserItem.read %}Unr{% else %}R{% endif %}ead</div>
     <hr>
 </article>
 {% endfor %}
-{% endif %}
+
 <div class="notice">No more articles in feed.</div>
 {% endblock %}

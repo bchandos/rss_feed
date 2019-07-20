@@ -19,10 +19,17 @@ from rss_feed.models import User, Feed, UserFeed, UserItem, Item, db
 bp = Blueprint('rss_feed', __name__)
 
 
-def query_items(db, user_id, order='DESC', limit=100, offset=0, feed_id=None, bookmarks_only=False):
+def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookmarks_only=False):
     q = db.session.query(Item, Feed, UserItem).join(Feed).join(UserFeed).join(UserItem)
-    bm_options = [True] if bookmarks_only else []
-        
+    bm_options = [True] if bookmarks_only else [True, False]
+    if feed_id:
+        return q.filter(UserFeed.user_id==user_id, 
+                    UserItem.user_id==user_id,
+                    UserItem.bookmark.in_(bm_options),
+                    Item.feed_id==feed_id).\
+                    order_by(Item.publication_date.desc()).\
+                    limit(limit).offset(offset).all()
+
     return q.filter(UserFeed.user_id==user_id, 
                     UserItem.user_id==user_id,
                     UserItem.bookmark.in_(bm_options)).\
@@ -42,7 +49,7 @@ def index():
     else:
         order_by = 'DESC'
         sort_order_opp = 'Ascending'
-    items = query_items(db=db, user_id=user_id, order=order_by)
+    items = query_items(user_id=user_id, order=order_by)
 
     return render_template('rss_feed/index.html', items=items, sort_order_opp=sort_order_opp)
 
@@ -59,7 +66,7 @@ def feed_index(feed_id):
         order_by = 'DESC'
         sort_order_opp = 'Ascending'
     feed_name = Feed.query.get(feed_id).name
-    items = query_items(db=db, user_id=user_id,
+    items = query_items(user_id=user_id,
                         order=order_by, feed_id=feed_id)
 
     return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id, sort_order_opp=sort_order_opp)
@@ -80,11 +87,11 @@ def bookmarked_index(feed_id):
         sort_order_opp = 'Ascending'
     if feed_id:
         feed_name = Feed.query.get(feed_id).name
-        items = query_items(db=db, user_id=user_id, order=order_by,
+        items = query_items(user_id=user_id, order=order_by,
                             feed_id=feed_id, bookmarks_only=True)
         return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id, sort_order_opp=sort_order_opp)
     else:
-        items = query_items(db=db, user_id=user_id,
+        items = query_items(user_id=user_id,
                             order=order_by, bookmarks_only=True)
         return render_template('rss_feed/index.html', items=items, sort_order_opp=sort_order_opp)
 
@@ -203,8 +210,10 @@ def download_items(url, feed_id, user_id):
             for item in xml_file[0].findall('item'):
                 title = item.find('title').text
                 link = item.find('link').text
-                description = re.sub(
-                    '<[^<]+?>', '', item.find('description').text)
+                if item.find('description') is not None:
+                    description = re.sub('<[^<]+?>', '', item.find('description').text)
+                else:
+                    description = 'No description available.'
                 if item.find('pubDate') is not None:
                     publication_date = datetime.timestamp(
                         parse(item.find('pubDate').text))
@@ -221,8 +230,8 @@ def download_items(url, feed_id, user_id):
                     db.session.add(new_ui)
                 else:
                     # Only create user_item if it doesn't exist
-                    if not UserItem.query.filter(user_id==user_id, item_id==exists.id).first():
-                        new_ui = UserItem(user_id=user_id, item_id=exists.id)
+                    if not UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==item_exists.id).first():
+                        new_ui = UserItem(user_id=user_id, item_id=item_exists.id)
                         db.session.add(new_ui)
                 db.session.commit()
 
