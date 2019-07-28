@@ -8,11 +8,15 @@
 
 <div class="rtable">
     {% for user_feed in users_feeds %}
-    <div class="rtable-cell rtable-left">{{ user_feed['name'] }}</div>
-    <div class="rtable-cell rtable-center"><a href="{{ url_for('rss_feed.edit_feed', id=user_feed['id']) }}"><img
+    {% if user_feed.UserFeed.user_feed_name %}
+    <div class="rtable-cell rtable-left">{{ user_feed.UserFeed.user_feed_name }}</div>
+    {% else %}
+    <div class="rtable-cell rtable-left">{{ user_feed.Feed.name }}</div>
+    {% endif %}
+    <div class="rtable-cell rtable-center"><a href="{{ url_for('rss_feed.edit_feed', id=user_feed.Feed.id) }}"><img
                 class="icon" src="{{ url_for('static', filename='icons/edit-icon.svg') }}"></a></div>
     <div class="rtable-cell rtable-right">
-        <form id="inline" action="{{ url_for('rss_feed.delete_feed', id=user_feed['id']) }}" method="POST">
+        <form id="inline" action="{{ url_for('rss_feed.delete_feed', id=user_feed.Feed.id) }}" method="POST">
             <input type="image" value="Delete" src="{{ url_for('static', filename='icons/delete-icon.svg') }}"
                 onclick="return confirm('Are you sure?');">
         </form>
