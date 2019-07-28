@@ -5,20 +5,20 @@
 {% endblock %}
 
 {% block content %}
-<form action="POST">
+<form action="{{ url_for('rss_feed.edit_feed', id=feed.Feed.id) }}" method="POST">
     <label for="feed_url">Feed URL</label>
-    <input name="feed_url" id="feed_url" value="{{ feed['url'] }}" required>
-    {% if feed['user_feed_name'] %}
-    <label for="user_feed_name">Feed Name</label>
-    <input name="user_feed_name" id="user_feed_name" value="{{ feed['user_feed_name'] }}" required>
+    <input name="feed_url" id="feed_url" value="{{ feed.Feed.url }}" required>
+    {% if feed.UserFeed.user_feed_name %}
+    <label for="feed_name">Feed Name</label>
+    <input name="feed_name" id="feed_name" value="{{ feed.UserFeed.user_feed_name }}" required>
     {% else %}
     <label for="feed_name">Feed Name</label>
-    <input name="feed_name" id="feed_name" value="{{ feed['name'] }}" required>
+    <input name="feed_name" id="feed_name" value="{{ feed.Feed.name }}" required>
     {% endif %}
     <input type="submit" value="Save Edits">
 </form>
 <hr>
-<form action="{{ url_for('rss_feed.delete_feed', id=feed['id']) }}" method="POST">
+<form action="{{ url_for('rss_feed.delete_feed', id=feed.Feed.id) }}" method="POST">
     <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
 </form>
 {% endblock %}
