@@ -20,7 +20,7 @@ def register():
             error = 'Username is required.'
         elif not password:
             error = 'Password is required.'
-        elif User.query.filter(username==username).first() is not None:
+        elif User.query.filter(User.username==username).first() is not None:
             error = f'Username {username} is in use.'
 
         if not error:
@@ -42,7 +42,7 @@ def login():
         username = request.form['username']
         password = request.form['password']
         error = None
-        user = User.query.filter(username==username).first()
+        user = User.query.filter(User.username==username).first()
         if not user:
             error = 'Incorrect username or password.'
             attempt += 1
@@ -70,7 +70,7 @@ def load_logged_in_user():
         g.user = None
     else: 
         g.user = User.query.get(user_id)
-        feed_group = UserFeed.query.filter(user_id==user_id).all()
+        feed_group = UserFeed.query.filter(UserFeed.user_id==user_id).all()
         g.user_feed_group = [f.feed_id for f in feed_group]
 
 
