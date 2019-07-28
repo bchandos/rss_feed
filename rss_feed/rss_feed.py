@@ -1,5 +1,5 @@
 import xml.etree.ElementTree as ET
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 from urllib.request import urlopen
 from urllib.error import URLError, HTTPError
 from datetime import datetime
@@ -20,27 +20,28 @@ bp = Blueprint('rss_feed', __name__)
 
 
 def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookmarks_only=False):
-    q = db.session.query(Item, Feed, UserItem).join(Feed).join(UserFeed).join(UserItem)
+    # TODO retrieve user_feed_name from UserFeed
+    q = db.session.query(Item, Feed, UserItem).join(Feed).join(UserFeed, UserFeed.feed_id==Item.feed_id).join(UserItem)
     bm_options = [True] if bookmarks_only else [True, False]
+    order_option = Item.publication_date.desc() if order=='DESC' else Item.publication_date.asc()
     if feed_id:
         return q.filter(UserFeed.user_id==user_id, 
                     UserItem.user_id==user_id,
                     UserItem.bookmark.in_(bm_options),
                     Item.feed_id==feed_id).\
-                    order_by(Item.publication_date.desc()).\
+                    order_by(order_option).\
                     limit(limit).offset(offset).all()
 
     return q.filter(UserFeed.user_id==user_id, 
                     UserItem.user_id==user_id,
                     UserItem.bookmark.in_(bm_options)).\
-                    order_by(Item.publication_date.desc()).\
+                    order_by(order_option).\
                     limit(limit).offset(offset).all()
     
 
 @bp.route('/')
 @login_required
 def index():
-    
     user_id = g.user.id
     sort_param = request.args.get('sort', None)
     if sort_param == 'Ascending':
@@ -102,42 +103,43 @@ def add_feed():
     if request.method == 'POST':
         feed_url = request.form['feed_url']
         error = None
-
         if not feed_url:
             error = 'URL is required.'
-
         if error:
             flash(error)
         else:
             # validate feed and gather feed name
             u = urlparse(feed_url, scheme='http')
-            try:
-                with urlopen(u.geturl()) as f:
-                    if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
-                        root = ET.fromstring(f.read())
-                        feed_name = root[0].find('title').text
-                    else:
-                        abort(404, f'Invalid feed URL ({feed_url}). Code {f.getcode()}.')
-            except (URLError, HTTPError) as err:
-                abort(404, f'URL ({feed_url}) could not be opened. Error: {err}.')
+            existing_feed = Feed.query.filter(Feed.url==u.geturl()).first()
+            if not existing_feed:
+                try:
+                    with urlopen(u.geturl()) as f:
+                        if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
+                            root = ET.fromstring(f.read())
+                            feed_name = root[0].find('title').text
+                        else:
+                            abort(404, f'Invalid feed URL ({feed_url}). Code {f.getcode()}.')
+                except (URLError, HTTPError) as err:
+                    abort(404, f'URL ({feed_url}) could not be opened. Error: {err}.')
 
-            new_feed = Feed(url=feed_url, name=feed_name)
-            db.session.add(new_feed)
-            db.session.commit()
-            new_uf = UserFeed(user_id=g.user.id, feed_id=new_feed.id)
-            db.session.add(new_uf)
-            db.session.commit()
-
-            return redirect(url_for('rss_feed.get_items', feed_id=new_feed.id))
+                new_feed = Feed(url=u.geturl(), name=feed_name)
+                db.session.add(new_feed)
+                db.session.commit()
+                new_uf = UserFeed(user_id=g.user.id, feed_id=new_feed.id)
+                db.session.add(new_uf)
+                db.session.commit()
+                feed_id = new_feed.id
+            else:
+                new_uf = UserFeed(user_id=g.user.id, feed_id=existing_feed.id)
+                db.session.add(new_uf)
+                db.session.commit()
+                feed_id = existing_feed.id
+            return redirect(url_for('rss_feed.get_items', feed_id=feed_id))
     return render_template('rss_feed/add_feed.html')
 
 
 def get_feed(id):
-    feed = Feed.query.join(UserFeed).filter(Feed.id==id, UserFeed.user_id==g.user.id).first()
-    # feed = get_db().execute(
-    #     'SELECT feeds.id, feeds.feed_name, feeds.feed_url, user_feeds.user_id, user_feeds.user_feed_name '
-    #     'FROM feeds JOIN user_feeds ON feeds.id = (?) '
-    #     'WHERE feeds.id = (?) AND user_feeds.user_id = (?)', (id, id, g.user.id)).fetchone()
+    feed = db.session.query(Feed, UserFeed).filter(Feed.id==id, UserFeed.feed_id==id, UserFeed.user_id==g.user.id).first()
     if not feed:
         abort(404, f'Feed id {id} doesn\'t exist.')
     return feed
@@ -148,13 +150,14 @@ def get_feed(id):
 def edit_feed(id):
     feed = get_feed(id)
     if request.method == 'POST':
+        custom_name = None
         feed_url = request.form['feed_url']
-        if request.form['feed_name'] != feed['feed_name']:
-            custom_name = request.form['custom_name']
-        feed.url = feed_url
-        db.session.add(feed)
+        if request.form['feed_name'] != feed.Feed.name:
+            custom_name = request.form['feed_name']
+        feed.Feed.url = feed_url
+        db.session.add(feed.Feed)
         if custom_name:
-            uf = UserFeed.query.filter(user_id==g.user.id, feed_id==id)
+            uf = UserFeed.query.filter(UserFeed.user_id==g.user.id, UserFeed.feed_id==id).first()
             uf.user_feed_name = custom_name
             db.session.add(uf)
         db.session.commit()
@@ -166,7 +169,10 @@ def edit_feed(id):
 @login_required
 def user_menu():
     user_id = g.user.id
-    users_feeds = Feed.query.join(UserFeed).filter(Feed.id.in_(g.user_feed_group)).all()
+    users_feeds = db.session.query(Feed, UserFeed).\
+        join(UserFeed).\
+        filter(Feed.id.in_(g.user_feed_group),
+               UserFeed.user_id==user_id).all()
     return render_template('rss_feed/user.html', users_feeds=users_feeds)
 
 
@@ -189,11 +195,11 @@ def get_items(feed_id):
     if g.user_feed_group:
         if feed_id and feed_id in g.user_feed_group:
             feed = get_feed(feed_id)
-            download_items(feed.url, feed_id, user_id)
+            download_items(feed.Feed.url, feed_id, user_id)
         elif not feed_id:
             for user_feed_id in g.user_feed_group:
                 feed = get_feed(int(user_feed_id))
-                download_items(feed.url, user_feed_id, user_id)
+                download_items(feed.Feed.url, user_feed_id, user_id)
         else:
             abort(404, "No such feed")
     else:
@@ -243,7 +249,6 @@ def datetimeformat(value, format='%m-%d-%Y @ %H:%M'):
 
 
 @bp.route('/_mark_read')
-# TODO make this toggle
 def mark_read():
     user_id = g.user.id
     id = request.args.get('id', 0, type=int)
@@ -296,7 +301,7 @@ def mark_read_all(feed_id):
     user_id = g.user.id
     
     if not feed_id:
-        Item.query.filter(user_id==user_id).update({'read': True})
+        UserItem.query.filter(UserItem.user_id==user_id).update({'read': True})
         # db.execute(
         #     'UPDATE user_items SET read = 1 WHERE user_id = ?', (user_id,))
         db.session.commit()
