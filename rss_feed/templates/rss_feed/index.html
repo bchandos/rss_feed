@@ -70,8 +70,14 @@
             <a href="{{ item.Item.link }}">
                 <h1>{{ item.Item.title }}</h1>
             </a>
-            <div class="about">from <a href="/{{ item.Item.feed_id }}">{{ item.Feed.name }}</a> on {{
-                item.Item.publication_date|datetimeformat }}</div>
+            <div class="about">from 
+                <a href="/{{ item.Item.feed_id }}">
+
+                    {{ item.Feed.name }}
+
+                </a> 
+                on {{ item.Item.publication_date|datetimeformat }}
+            </div>
         </div>
     </header>
     <p class="body">{{ item.Item.description|safe|truncate }}</p>
