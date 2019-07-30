@@ -10,6 +10,8 @@ bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 @bp.route('/register', methods=('GET', 'POST'))
 def register():
+    if g.user:
+        return redirect(url_for('rss_feed.index'))
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -59,7 +61,8 @@ def login():
             return redirect(url_for('rss_feed.index'))
 
         flash(error)
-
+    if g.user:
+        return redirect(url_for('rss_feed.index'))
     return render_template('auth/login.html')
 
 
