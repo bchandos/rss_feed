@@ -11,6 +11,7 @@
     {% if feed.UserFeed.user_feed_name %}
     <label for="feed_name">Feed Name</label>
     <input name="feed_name" id="feed_name" value="{{ feed.UserFeed.user_feed_name }}" required>
+    Original name: {{ feed.Feed.name }}
     {% else %}
     <label for="feed_name">Feed Name</label>
     <input name="feed_name" id="feed_name" value="{{ feed.Feed.name }}" required>
