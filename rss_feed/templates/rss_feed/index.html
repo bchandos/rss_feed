@@ -72,9 +72,11 @@
             </a>
             <div class="about">from 
                 <a href="/{{ item.Item.feed_id }}">
-
+                    {% if item.UserFeed.user_feed_name %}
+                    {{ item.UserFeed.user_feed_name }}
+                    {% else %}
                     {{ item.Feed.name }}
-
+                    {% endif %}
                 </a> 
                 on {{ item.Item.publication_date|datetimeformat }}
             </div>
