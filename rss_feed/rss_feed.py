@@ -11,7 +11,6 @@ from werkzeug.exceptions import abort
 from dateutil.parser import parse
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import null
 
 from rss_feed.auth import login_required, debug_only
 from rss_feed.models import User, Feed, UserFeed, UserItem, Item, db
@@ -20,8 +19,7 @@ bp = Blueprint('rss_feed', __name__)
 
 
 def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookmarks_only=False):
-    # TODO retrieve user_feed_name from UserFeed
-    q = db.session.query(Item, Feed, UserItem).join(Feed).join(UserFeed, UserFeed.feed_id==Item.feed_id).join(UserItem)
+    q = db.session.query(Item, Feed, UserFeed, UserItem).join(Feed, Feed.id==Item.feed_id).join(UserFeed, UserFeed.feed_id==Item.feed_id).join(UserItem)
     bm_options = [True] if bookmarks_only else [True, False]
     order_option = Item.publication_date.desc() if order=='DESC' else Item.publication_date.asc()
     if feed_id:
@@ -66,7 +64,11 @@ def feed_index(feed_id):
     else:
         order_by = 'DESC'
         sort_order_opp = 'Ascending'
-    feed_name = Feed.query.get(feed_id).name
+    user_feed = UserFeed.query.filter(UserFeed.user_id==user_id, UserFeed.feed_id==feed_id).first()
+    if user_feed.user_feed_name:
+        feed_name = user_feed.user_feed_name
+    else:
+        feed_name = Feed.query.get(feed_id).name    
     items = query_items(user_id=user_id,
                         order=order_by, feed_id=feed_id)
 
