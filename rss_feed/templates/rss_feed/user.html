@@ -30,6 +30,14 @@
             </a>
         </td>
     </tr>
+    {% else %}
+    <tr>
+        <td>
+            No feeds.
+            <a class="w3-margin" href="{{ url_for('rss_feed.add_feed') }}">
+                <i class="material-icons">add</i><span class="w3-hide-small">Add New Feed</span></a>
+            </td>
+        </tr>
     {% endfor %}
 </table>
 {% endblock %}
