@@ -1,92 +1,95 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<h1>{% block title %}News Feed Items{% endblock %}</h1>
+<h2 style="display:inline-block;">{% block title %}News Feed Items{% endblock %}</h2>
 {% if g.user %}
-<a class="action" href="{{ url_for('rss_feed.add_feed') }}">
-    <img class="icon" src="{{ url_for('static', filename='icons/add-feed-icon.svg') }}" alt="Add New Feed" />
-    <span class="action-text">Add New Feed</span>
-</a>
+<a class="w3-margin" href="{{ url_for('rss_feed.add_feed') }}">
+    <i class="material-icons">add</i><span class="w3-hide-small">Add New Feed</span></a>
 {% if feed_name %}
-<a class="action" href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}">
-    <img class="icon" src="{{ url_for('static', filename='icons/refresh-feeds-icon.svg') }}" alt="Refresh Feed" />
-    <span class="action-text">Refresh Feed</span>
-</a>
-<a class="action" href="{{ url_for('rss_feed.mark_read_all', feed_id=feed_id) }}">
-    <img class="icon" src="{{ url_for('static', filename='icons/mark-read-icon.svg') }}" alt="Mark Feed Read" />
-    <span class="action-text">Mark Feed Read</span>
-</a>
+<a class="w3-margin" href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}">
+    <i class="material-icons">refresh</i><span class="w3-hide-small">Refresh Feed</span></a>
+<a class="w3-margin" href="{{ url_for('rss_feed.mark_read_all', feed_id=feed_id) }}">
+    <i class="material-icons">done_all</i><span class="w3-hide-small">Mark Feed Read</span></a>
 {% else %}
-<a class="action" href="{{ url_for('rss_feed.get_items') }}">
-    <img class="icon" src="{{ url_for('static', filename='icons/refresh-feeds-icon.svg') }}" alt="Refresh All Feeds" />
-    <span class="action-text">Refresh All Feeds</span>
-</a>
-<a class="action" href="{{ url_for('rss_feed.mark_read_all') }}">
-    <img class="icon" src="{{ url_for('static', filename='icons/mark-read-icon.svg') }}" alt="Mark All Read" />
-    <span class="action-text">Mark All Read</span>
-</a>
+<a class="w3-margin" href="{{ url_for('rss_feed.get_items') }}">
+    <i class="material-icons">refresh</i><span class="w3-hide-small">Refresh All Feeds</span></a>
+<a class="w3-margin" href="{{ url_for('rss_feed.mark_read_all') }}">
+    <i class="material-icons">done_all</i><span class="w3-hide-small">Mark All Read</span></a>
 {% endif %}
 {% endif %}
 {% endblock %}
 
 {% block content %}
-<div class="feed_controls">
-    <div id="show_read">Show Read</div>
+<div class="w3-container w3-margin-bottom">
+    <a class="w3-btn w3-light-grey" id="show_read">Show Read</a>
     {% if feed_name %}
-    <a id="no_style" href="{{ url_for(request.url_rule.endpoint, feed_id=feed_id, sort=sort_order_opp) }}">
+    <a class="w3-btn w3-light-grey" href="{{ url_for(request.url_rule.endpoint, feed_id=feed_id, sort=sort_order_opp) }}">
         <div id="sort_order">Sort {{ sort_order_opp }}</div>
     </a>
-    <a id="no_style" href="{{ url_for('rss_feed.bookmarked_index', feed_id=feed_id) }}">
+    <a class="w3-btn w3-light-grey" href="{{ url_for('rss_feed.bookmarked_index', feed_id=feed_id) }}">
         <div id="bookmark">Feed Bookmarks</div>
     </a>
     {% else %}
-    <a id="no_style" href="{{ url_for(request.url_rule.endpoint, sort=sort_order_opp) }}">
+    <a class="w3-btn w3-light-grey" href="{{ url_for(request.url_rule.endpoint, sort=sort_order_opp) }}">
         <div id="sort_order">Sort {{ sort_order_opp }}</div>
     </a>
-    <a id="no_style" href="{{ url_for('rss_feed.bookmarked_index') }}">
+    <a class="w3-btn w3-light-grey" href="{{ url_for('rss_feed.bookmarked_index') }}">
         <div id="bookmark">Bookmarks</div>
     </a>
     {% endif %}
 </div>
 {% if feed_name %}
-<a href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}">{{ feed_name }}</a>
-<a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}"><img class="icon"
-        src="{{ url_for('static', filename='icons/settings-icon.svg') }}" alt="Feed Settings" /></a>
+<div class="w3-container w3-margin-bottom">
+    <a href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}">{{ feed_name }}</a>
+    <a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">
+        <!-- <img class="icon" src="{{ url_for('static', filename='icons/settings-icon.svg') }}" alt="Feed Settings" /> -->
+        <i class="material-icons w3-small">settings</i>
+    </a>
+</div>
 {% endif %}
 <script type="text/javascript" src="{{ url_for('static', filename='mark_read.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='show_hide.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='bookmark.js') }}"></script>
 {% for item in items %}
-<article class="item {% if item.UserItem.read %}read invisible{% else %}unread{% endif %}" id="{{ item.Item.id }}">
-    <header>
-        <div>
+<article class="w3-card w3-margin-bottom item {% if item.UserItem.read %}read w3-hide{% else %}unread{% endif %}" id="{{ item.Item.id }}">
+    <div class="w3-container">
+        <header>
             {% if item.UserItem.bookmark %}
-            <img class="bookmark marked" src="{{ url_for('static', filename='icons/bookmark-red-icon.svg') }}"
-                id="bm-{{ item.Item.id }}" />
-            {% else %}
-            <img class="bookmark unmarked" src="{{ url_for('static', filename='icons/bookmark-icon.svg') }}"
-                id="bm-{{ item.Item.id }}" />
+                <a class="w3-right w3-button w3-circle bookmark w3-xlarge" data-id="{{ item.Item.id }}" data-marked="true">
+                    <i class="material-icons">bookmark</i>
+                </a>
+                
+                {% else %}
+                <a class="w3-right w3-button w3-circle bookmark w3-xlarge" data-id="{{ item.Item.id }}" data-marked="false">
+                    <i class="material-icons">bookmark_border</i>
+                </a>
+                
             {% endif %}
-            <a href="{{ item.Item.link }}">
-                <h1>{{ item.Item.title }}</h1>
-            </a>
-            <div class="about">from 
-                <a href="/{{ item.Item.feed_id }}">
-                    {% if item.UserFeed.user_feed_name %}
-                    {{ item.UserFeed.user_feed_name }}
-                    {% else %}
-                    {{ item.Feed.name }}
-                    {% endif %}
-                </a> 
-                on {{ item.Item.publication_date|datetimeformat }}
-            </div>
+                    <a href="{{ item.Item.link }}">
+                        <h3>{{ item.Item.title }}</h3>
+                    </a>
+                    <em>from 
+                        <a href="/{{ item.Item.feed_id }}">
+                            {% if item.UserFeed.user_feed_name %}
+                            {{ item.UserFeed.user_feed_name }}
+                            {% else %}
+                            {{ item.Feed.name }}
+                            {% endif %}
+                        </a> 
+                        on {{ item.Item.publication_date|datetimeformat }}
+                    </em>
+            </header>
+            <p>{{ item.Item.description|safe|truncate }}</p>
+            <p>
+                {% if item.UserItem.read %}
+                    <a class="w3-btn w3-light-grey marker" data-id="{{ item.Item.id }}" data-read="true">Mark Unread</a>
+                {% else %}
+                    <a class="w3-btn w3-light-grey marker" data-id="{{ item.Item.id }}" data-read="false">Mark Read</a>
+                {% endif %}
+            </p>
         </div>
-    </header>
-    <p class="body">{{ item.Item.description|safe|truncate }}</p>
-    <div class="marker" id="mr-{{ item.Item.id }}">Mark {% if item.UserItem.read %}Unr{% else %}R{% endif %}ead</div>
-    <hr>
-</article>
-{% endfor %}
-
-<div class="notice">No more articles in feed.</div>
-{% endblock %}
+    </article>
+    {% endfor %}
+    
+    <div class="notice">No more articles in feed.</div>
+    {% endblock %}

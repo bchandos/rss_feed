@@ -1,16 +1,17 @@
 $(function () {
     $('.bookmark').on('click', function () {
+        let target = $(this);
         $.getJSON($SCRIPT_ROOT + '/_bookmark', {
-            id: $(this).attr('id').slice(3),
-            marked: $(this).hasClass('marked')
+            id: $(this).attr('data-id'),
+            marked: $(this).attr('data-marked')
         }, function (data) {
             if (data.bookmark == 'true') {
-                $('#bm-' + data.id).attr('src', data.u);
-                $('#bm-' + data.id).removeClass('unmarked').addClass('marked');
+                target.children('i').text('bookmark');
+                target.attr('data-marked', 'true');
             }
             else {
-                $('#bm-' + data.id).attr('src', data.u);
-                $('#bm-' + data.id).removeClass('marked').addClass('unmarked');
+                target.children('i').text('bookmark_border')
+                target.attr('data-marked', 'false');
             }
         });
     });

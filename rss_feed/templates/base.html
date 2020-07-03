@@ -3,35 +3,43 @@
 <title>{% block title %}{% endblock %} - RSS Feed</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="icon" href="{{ url_for('static', filename='icons/rss-feed-icon.svg') }}">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<!-- <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"> -->
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"> 
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
 <script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
 <script type="text/javascript">$SCRIPT_ROOT = {{ request.script_root | tojson | safe }};</script>
-<nav>
-    <a href="{{ url_for('rss_feed.index') }}">
+<nav class="w3-bar w3-light-blue">
+    <a href="{{ url_for('rss_feed.index') }}" class="w3-bar-item">
         <img id="logo" src="{{ url_for('static', filename='icons/rss-feed-icon.svg') }}" alt="RSS Feed" />
     </a>
     <ul>
         {% if g.user %}
-        <li><a href="{{ url_for('rss_feed.user_menu') }}">{{ g.user['username'] }}</a>
-        <li><a href="{{ url_for('auth.logout') }}">Log Out</a>
+        <li class="w3-bar-item w3-right"><a class="w3-button" href="{{ url_for('rss_feed.user_menu') }}">{{ g.user['username'] }}</a>
+        <li class="w3-bar-item w3-right"><a class="w3-button" href="{{ url_for('auth.logout') }}">Log Out</a>
             {% else %}
-        <li><a href="{{ url_for('auth.login') }}">Log In</a>
-        <li><a href="{{ url_for('auth.register') }}">Register</a>
+        <li class="w3-bar-item w3-right"><a class="w3-button" href="{{ url_for('auth.login') }}">Log In</a>
+        <li class="w3-bar-item w3-right"><a class="w3-button" href="{{ url_for('auth.register') }}">Register</a>
             {% endif %}
     </ul>
 </nav>
-<section class="content">
-    <header>
-        {% block header %}{% endblock %}
-    </header>
-    {% for message in get_flashed_messages() %}
-    <div class="flash">
-        {{ message }}
-        <span class="closebtn" onclick="this.parentElement.style.display='none';">
-            <img class="icon" src="{{ url_for('static', filename='icons/close-icon.svg') }}">
-        </span>
+<section class="w3-container">
+    <div class="w3-row">
+        <div class="w3-col m5 l7">
+            <header class="w3-container">
+                {% block header %}{% endblock %}
+            </header>
+            {% for message in get_flashed_messages() %}
+            <div class="w3-panel w3-pale-yellow w3-display-container">
+                <p>
+                    {{ message }}
+                </p>
+                <span class="w3-button w3-display-topright" onclick="this.parentElement.style.display='none';">
+                    &times;
+                </span>
+            </div>
+            {% endfor %}
+            {% block content %}{% endblock %}
+        </div>
     </div>
-    {% endfor %}
-    {% block content %}{% endblock %}
 </section>

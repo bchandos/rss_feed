@@ -6,22 +6,45 @@
 
 {% block content %}
 
-<div class="rtable">
+<table class="w3-table w3-striped">
+    <tr>
+        <th>Feed Name</th>
+        <th>Edit</th>
+        <th>Delete</th>
+    </tr>
     {% for user_feed in users_feeds %}
-    {% if user_feed.UserFeed.user_feed_name %}
-    <div class="rtable-cell rtable-left">{{ user_feed.UserFeed.user_feed_name }}</div>
-    {% else %}
-    <div class="rtable-cell rtable-left">{{ user_feed.Feed.name }}</div>
-    {% endif %}
-    <div class="rtable-cell rtable-center"><a href="{{ url_for('rss_feed.edit_feed', id=user_feed.Feed.id) }}"><img
-                class="icon" src="{{ url_for('static', filename='icons/edit-icon.svg') }}"></a></div>
-    <div class="rtable-cell rtable-right">
-        <form id="inline" action="{{ url_for('rss_feed.delete_feed', id=user_feed.Feed.id) }}" method="POST">
-            <input type="image" value="Delete" src="{{ url_for('static', filename='icons/delete-icon.svg') }}"
-                onclick="return confirm('Are you sure?');">
-        </form>
-    </div>
-
+    <tr>
+        {% if user_feed.UserFeed.user_feed_name %}
+        <td><p>{{ user_feed.UserFeed.user_feed_name }}</p></td>
+        {% else %}
+        <td><p>{{ user_feed.Feed.name }}</p></td>
+        {% endif %}
+        <td>
+            <a class="w3-btn w3-circle" href="{{ url_for('rss_feed.edit_feed', id=user_feed.Feed.id) }}">
+                <i class="material-icons w3-large">edit</i>
+            </a>
+        </td>
+        <td>
+            <a class="w3-btn w3-circle" onclick="document.getElementById('warning-modal').style.display='block'">
+                <i class="material-icons w3-large">delete</i>
+            </a>
+        </td>
+    </tr>
     {% endfor %}
+</table>
+
+<div id="warning-modal" class="w3-modal">
+    <div class="w3-modal-content">
+        <header class="w3-container w3-red">
+            <span onclick="document.getElementById('warning-modal').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+            <h4>Are you sure you want to delete this feed?</h4>
+        </header>
+        <div class="w3-container">
+            <p>This will delete all articles and bookmarks from this feed!</p>
+            <p>
+                <a class="w3-btn w3-red">Delete Feed</a>
+            </p>
+        </div>
+    </div>
 </div>
 {% endblock %}
