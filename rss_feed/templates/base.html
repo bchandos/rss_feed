@@ -23,23 +23,39 @@
             {% endif %}
     </ul>
 </nav>
+{% for message in get_flashed_messages() %}
+<div class="w3-panel w3-pale-yellow w3-display-container">
+    <p>
+        {{ message }}
+    </p>
+    <span class="w3-button w3-display-topright" onclick="this.parentElement.style.display='none';">
+        &times;
+    </span>
+</div>
+{% endfor %}
 <section class="w3-container">
     <div class="w3-row">
         <div class="w3-col m5 l7">
             <header class="w3-container">
                 {% block header %}{% endblock %}
             </header>
-            {% for message in get_flashed_messages() %}
-            <div class="w3-panel w3-pale-yellow w3-display-container">
-                <p>
-                    {{ message }}
-                </p>
-                <span class="w3-button w3-display-topright" onclick="this.parentElement.style.display='none';">
-                    &times;
-                </span>
-            </div>
-            {% endfor %}
             {% block content %}{% endblock %}
         </div>
     </div>
 </section>
+
+<script type="text/javascript" src="{{ url_for('static', filename='delete_feed.js') }}"></script>
+<div id="delete-warning-modal" class="w3-modal">
+    <div class="w3-modal-content">
+        <header class="w3-container w3-red">
+            <span onclick="document.getElementById('delete-warning-modal').style.display='none'" class="w3-button w3-display-topright">&times;</span>
+            <h4>Are you sure you want to delete this feed?</h4>
+        </header>
+        <div class="w3-container">
+            <p>This will delete all articles and bookmarks from this feed!</p>
+            <p>
+                <a class="w3-btn w3-red" id="bigScaryDeleteButton">Delete Feed</a>
+            </p>
+        </div>
+    </div>
+</div>

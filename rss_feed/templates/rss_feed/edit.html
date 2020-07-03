@@ -5,21 +5,35 @@
 {% endblock %}
 
 {% block content %}
-<form action="{{ url_for('rss_feed.edit_feed', id=feed.Feed.id) }}" method="POST">
-    <label for="feed_url">Feed URL</label>
-    <input name="feed_url" id="feed_url" value="{{ feed.Feed.url }}" required>
-    {% if feed.UserFeed.user_feed_name %}
-    <label for="feed_name">Feed Name</label>
-    <input name="feed_name" id="feed_name" value="{{ feed.UserFeed.user_feed_name }}" required>
-    Original name: {{ feed.Feed.name }}
-    {% else %}
-    <label for="feed_name">Feed Name</label>
-    <input name="feed_name" id="feed_name" value="{{ feed.Feed.name }}" required>
-    {% endif %}
-    <input type="submit" value="Save Edits">
-</form>
-<hr>
-<form action="{{ url_for('rss_feed.delete_feed', id=feed.Feed.id) }}" method="POST">
-    <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
-</form>
+<div class="w3-row">
+    <div class="w3-col m5 l8">
+        <div class="w3-card-2">
+            <form class="w3-container" action="{{ url_for('rss_feed.edit_feed', id=feed.Feed.id) }}" method="POST">
+                <p>
+                    <label class="w3-text-dark-grey" for="feed_url">Feed URL</label>
+                    <input class="w3-input" name="feed_url" id="feed_url" value="{{ feed.Feed.url }}" required>
+                </p>
+                {% if feed.UserFeed.user_feed_name %}
+                <p>
+                    <label class="w3-text-dark-grey" for="feed_name">Feed Name</label>
+                    <input class="w3-input" name="feed_name" id="feed_name" value="{{ feed.UserFeed.user_feed_name }}" required>
+                </p>
+                <p>
+                    Original name: {{ feed.Feed.name }}
+                </p>
+                {% else %}
+                <p>
+                    <label class="w3-text-dark-grey" for="feed_name">Feed Name</label>
+                    <input class="w3-input" name="feed_name" id="feed_name" value="{{ feed.Feed.name }}" required>
+                </p>
+                {% endif %}
+                <p>
+                    <input class="w3-btn w3-light-blue" type="submit" value="Save Edits">
+                    <a class="w3-btn w3-red w3-right" data-feedID="{{feed.Feed.id}}" onclick="deleteFeed(this);">Delete</a>
+                </p>
+            </form>
+        </div>
+    </div>
+</div>
+
 {% endblock %}

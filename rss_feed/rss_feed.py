@@ -35,7 +35,11 @@ def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookma
                     UserItem.bookmark.in_(bm_options)).\
                     order_by(order_option).\
                     limit(limit).offset(offset).all()
-    
+
+
+@bp.errorhandler(404)
+def error_handler(error):
+    return redirect(url_for('rss_feed.index'))
 
 @bp.route('/')
 @login_required
@@ -143,7 +147,8 @@ def add_feed():
 def get_feed(id):
     feed = db.session.query(Feed, UserFeed).filter(Feed.id==id, UserFeed.feed_id==id, UserFeed.user_id==g.user.id).first()
     if not feed:
-        abort(404, f'Feed id {id} doesn\'t exist.')
+        flash(f'Feed id {id} doesn\'t exist.')
+        abort(404)
     return feed
 
 
@@ -178,7 +183,7 @@ def user_menu():
     return render_template('rss_feed/user.html', users_feeds=users_feeds)
 
 
-@bp.route('/<int:id>/delete', methods=('POST',))
+@bp.route('/<int:id>/delete', methods=('GET',))
 @login_required
 def delete_feed(id):
     feed_name = Feed.query.get(id).name
@@ -186,7 +191,8 @@ def delete_feed(id):
     db.session.delete(user_feed)
     db.session.commit()
     flash(f'Feed {feed_name} deleted.')
-    return redirect(url_for('rss_feed.index'))
+    print(request.referrer)
+    return redirect(request.referrer)
 
 
 @bp.route('/update', defaults={'feed_id': None})

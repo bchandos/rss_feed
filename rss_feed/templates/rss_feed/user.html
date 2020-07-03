@@ -25,26 +25,11 @@
             </a>
         </td>
         <td>
-            <a class="w3-btn w3-circle" onclick="document.getElementById('warning-modal').style.display='block'">
+        <a class="w3-btn w3-circle" data-feedID="{{user_feed.Feed.id}}" onclick="deleteFeed(this);">
                 <i class="material-icons w3-large">delete</i>
             </a>
         </td>
     </tr>
     {% endfor %}
 </table>
-
-<div id="warning-modal" class="w3-modal">
-    <div class="w3-modal-content">
-        <header class="w3-container w3-red">
-            <span onclick="document.getElementById('warning-modal').style.display='none'" class="w3-button w3-display-topright">&times;</span>
-            <h4>Are you sure you want to delete this feed?</h4>
-        </header>
-        <div class="w3-container">
-            <p>This will delete all articles and bookmarks from this feed!</p>
-            <p>
-                <a class="w3-btn w3-red">Delete Feed</a>
-            </p>
-        </div>
-    </div>
-</div>
 {% endblock %}

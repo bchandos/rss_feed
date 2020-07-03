@@ -5,19 +5,23 @@
 {% endblock %}
 
 {% block content %}
-<div class="w3-card-2" style="width: 50%;">
-    <form class="w3-container" method="POST">
-        <p>
-            <label for="username">Username</label>
-            <input class="w3-input w3-border" name="username" id="username" required>
-        </p>
-        <p>
-            <label for="password">Password</label>
-            <input class="w3-input w3-border" type="password" name="password" id="password" required>
-        </p>
-        <p>
-            <input class="w3-btn w3-light-blue" type="submit" value="Log In">
-        </p>
-    </form>
+<div class="w3-row">
+    <div class="w3-col m4 l6">
+        <div class="w3-card-2">
+            <form class="w3-container" method="POST">
+                <p>
+                    <label for="username">Username</label>
+                    <input class="w3-input w3-border" name="username" id="username" required>
+                </p>
+                <p>
+                    <label for="password">Password</label>
+                    <input class="w3-input w3-border" type="password" name="password" id="password" required>
+                </p>
+                <p>
+                    <input class="w3-btn w3-light-blue" type="submit" value="Log In">
+                </p>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}
