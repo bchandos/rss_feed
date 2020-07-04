@@ -39,6 +39,8 @@ def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookma
 
 @bp.errorhandler(404)
 def error_handler(error):
+    if type(error) == str:
+        flash(error)
     return redirect(url_for('rss_feed.index'))
 
 @bp.route('/')
@@ -218,36 +220,41 @@ def get_items(feed_id):
 
 
 def download_items(url, feed_id, user_id):
-    with urlopen(url) as f:
-        if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
-            xml_file = ET.fromstring(f.read())
-            for item in xml_file[0].findall('item'):
-                title = item.find('title').text
-                link = item.find('link').text
-                if item.find('description') is not None:
-                    description = re.sub('<[^<]+?>', '', item.find('description').text)
-                else:
-                    description = 'No description available.'
-                if item.find('pubDate') is not None:
-                    publication_date = datetime.timestamp(
-                        parse(item.find('pubDate').text))
-                else:
-                    publication_date = datetime.timestamp(datetime.today())
-                guid = item.find('guid').text
-                item_exists = Item.query.filter(Item.guid==guid).first()
-                if not item_exists:
-                    # Only create item if it doesn't exist
-                    new_item = Item(feed_id=feed_id, title=title, link=link, description=description, publication_date=publication_date, guid=guid)
-                    db.session.add(new_item)
-                    db.session.commit()
-                    new_ui = UserItem(user_id=user_id, item_id=new_item.id)
-                    db.session.add(new_ui)
-                else:
-                    # Only create user_item if it doesn't exist
-                    if not UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==item_exists.id).first():
-                        new_ui = UserItem(user_id=user_id, item_id=item_exists.id)
+    try:
+        f = urlopen(url)
+    except:
+        return
+    else:
+        with f:
+            if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
+                xml_file = ET.fromstring(f.read())
+                for item in xml_file[0].findall('item'):
+                    title = item.find('title').text
+                    link = item.find('link').text
+                    if item.find('description') is not None:
+                        description = re.sub('<[^<]+?>', '', item.find('description').text)
+                    else:
+                        description = 'No description available.'
+                    if item.find('pubDate') is not None:
+                        publication_date = datetime.timestamp(
+                            parse(item.find('pubDate').text))
+                    else:
+                        publication_date = datetime.timestamp(datetime.today())
+                    guid = item.find('guid').text
+                    item_exists = Item.query.filter(Item.guid==guid).first()
+                    if not item_exists:
+                        # Only create item if it doesn't exist
+                        new_item = Item(feed_id=feed_id, title=title, link=link, description=description, publication_date=publication_date, guid=guid)
+                        db.session.add(new_item)
+                        db.session.commit()
+                        new_ui = UserItem(user_id=user_id, item_id=new_item.id)
                         db.session.add(new_ui)
-                db.session.commit()
+                    else:
+                        # Only create user_item if it doesn't exist
+                        if not UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==item_exists.id).first():
+                            new_ui = UserItem(user_id=user_id, item_id=item_exists.id)
+                            db.session.add(new_ui)
+                    db.session.commit()
 
 
 @bp.app_template_filter()
