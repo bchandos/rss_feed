@@ -51,7 +51,7 @@
 <script type="text/javascript" src="{{ url_for('static', filename='js/show_hide.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='js/bookmark.js') }}"></script>
 {% for item in items %}
-<article class="w3-card w3-margin-bottom w3-leftbar w3-rightbar w3-border-light-blue item {% if item.UserItem.read %}read w3-hide{% else %}unread{% endif %}" id="{{ item.Item.id }}">
+<article class="w3-card w3-margin-bottom w3-leftbar w3-border-light-blue item {% if item.UserItem.read %}read w3-hide{% else %}unread{% endif %}" id="{{ item.Item.id }}">
     <div class="w3-container">
         <header>
             {% if item.UserItem.bookmark %}
