@@ -47,11 +47,11 @@
     </a>
 </div>
 {% endif %}
-<script type="text/javascript" src="{{ url_for('static', filename='mark_read.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='show_hide.js') }}"></script>
-<script type="text/javascript" src="{{ url_for('static', filename='bookmark.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/mark_read.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/show_hide.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='js/bookmark.js') }}"></script>
 {% for item in items %}
-<article class="w3-card w3-margin-bottom item {% if item.UserItem.read %}read w3-hide{% else %}unread{% endif %}" id="{{ item.Item.id }}">
+<article class="w3-card w3-margin-bottom w3-leftbar w3-rightbar w3-border-light-blue item {% if item.UserItem.read %}read w3-hide{% else %}unread{% endif %}" id="{{ item.Item.id }}">
     <div class="w3-container">
         <header>
             {% if item.UserItem.bookmark %}
@@ -91,5 +91,5 @@
     </article>
     {% endfor %}
     
-    <div class="notice">No more articles in feed.</div>
+    <div class="w3-panel w3-pale-green w3-display-container">No more articles in feed.</div>
     {% endblock %}
