@@ -1,3 +1,8 @@
+let _state = {
+    showRead: false,
+};
+
+
 // Delete feed
 function deleteFeed(elem) {
     let id = $(elem).attr('data-feedID');
@@ -16,20 +21,20 @@ $(function () {
         $.getJSON($SCRIPT_ROOT + '/_mark_read', {
             id: $(this).attr('data-id')
         }, function (data) {
-            if ($("#show_read").text() == 'Show Read' && data.read == 'Read') {
-                $('article#' + data.id).fadeOut("200", function () {
-                    $('article#' + data.id).removeClass("unread").addClass("read w3-hide");
+            if (!_state.showRead && data.read == 'Read') {
+                $(`article#${data.id}`).fadeOut("200", function () {
+                    $(`article#${data.id}`).removeClass("unread").addClass("read w3-hide w3-border-pale-blue");
                     /*  removes the display: none added by fadeOut
                         and allow the standard CSS to control display */
-                    $('article#' + data.id).css("display", "");
+                    $(`article#${data.id}`).css("display", "");
                 });
                 label = "Mark Unread";
             } else if (data.read == 'Read') {
-                $('article#' + data.id).removeClass("unread").addClass("read");
+                $(`article#${data.id}`).removeClass("unread w3-border-light-blue").addClass("read w3-border-pale-blue");
                 label = "Mark Unread";
             }
             else {
-                $('article#' + data.id).removeClass("read").addClass("unread");
+                $(`article#${data.id}`).removeClass("read w3-border-pale-blue").addClass("unread w3-border-light-blue");
                 label = "Mark Read";
             }
             target.text(label)
@@ -63,7 +68,8 @@ $(function () {
 // Show / hide
 $(function () {
     $("#show_read").on("click", function () {
-        if ($(this).text() == "Show Read") {
+        _state.showRead = !_state.showRead;
+        if (_state.showRead) {
             $("article.read").removeClass("w3-hide");
             $(this).text("Hide Read");
         }
