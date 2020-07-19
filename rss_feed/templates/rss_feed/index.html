@@ -1,39 +1,41 @@
 {% extends 'base.html' %}
 
 {% block header %}
-<h2 style="display:inline-block;">{% block title %}News Feed Items{% endblock %}</h2>
-{% if g.user %}
-<a class="w3-margin" href="{{ url_for('rss_feed.add_feed') }}">
-    <i class="material-icons">add</i><span class="w3-hide-small">Add New Feed</span></a>
-{% if feed_name %}
-<a class="w3-margin" href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}">
-    <i class="material-icons">refresh</i><span class="w3-hide-small">Refresh Feed</span></a>
-<a class="w3-margin" href="{{ url_for('rss_feed.mark_read_all', feed_id=feed_id) }}">
-    <i class="material-icons">done_all</i><span class="w3-hide-small">Mark Feed Read</span></a>
-{% else %}
-<a class="w3-margin" href="{{ url_for('rss_feed.get_items') }}">
-    <i class="material-icons">refresh</i><span class="w3-hide-small">Refresh All Feeds</span></a>
-<a class="w3-margin" href="{{ url_for('rss_feed.mark_read_all') }}">
-    <i class="material-icons">done_all</i><span class="w3-hide-small">Mark All Read</span></a>
-{% endif %}
-{% endif %}
+<h2>{% block title %}News Feed Items{% endblock %}</h2>
+<div class="w3-margin">
+    {% if g.user %}
+    <a class="" href="{{ url_for('rss_feed.add_feed') }}">
+        <i class="material-icons">add</i><span class="w3-hide-small">Add New Feed</span></a>
+    {% if feed_name %}
+    <a class="" href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}">
+        <i class="material-icons">refresh</i><span class="w3-hide-small">Refresh Feed</span></a>
+    <a class="" href="{{ url_for('rss_feed.mark_read_all', feed_id=feed_id) }}">
+        <i class="material-icons">done_all</i><span class="w3-hide-small">Mark Feed Read</span></a>
+    {% else %}
+    <a class="" href="{{ url_for('rss_feed.get_items') }}">
+        <i class="material-icons">refresh</i><span class="w3-hide-small">Refresh All Feeds</span></a>
+    <a class="" href="{{ url_for('rss_feed.mark_read_all') }}">
+        <i class="material-icons">done_all</i><span class="w3-hide-small">Mark All Read</span></a>
+    {% endif %}
+    {% endif %}
+</div>
 {% endblock %}
 
 {% block content %}
 <div class="w3-container w3-margin-bottom">
-    <a class="w3-btn w3-light-grey" id="show_read">Show Read</a>
+    <a class="w3-btn w3-round w3-light-grey" id="show_read">Show Read</a>
     {% if feed_name %}
-    <a class="w3-btn w3-light-grey" href="{{ url_for(request.url_rule.endpoint, feed_id=feed_id, sort=sort_order_opp) }}">
+    <a class="w3-btn w3-round w3-light-grey" href="{{ url_for(request.url_rule.endpoint, feed_id=feed_id, sort=sort_order_opp) }}">
         <div id="sort_order">Sort {{ sort_order_opp }}</div>
     </a>
-    <a class="w3-btn w3-light-grey" href="{{ url_for('rss_feed.bookmarked_index', feed_id=feed_id) }}">
+    <a class="w3-btn w3-round w3-light-grey" href="{{ url_for('rss_feed.bookmarked_index', feed_id=feed_id) }}">
         <div id="bookmark">Feed Bookmarks</div>
     </a>
     {% else %}
-    <a class="w3-btn w3-light-grey" href="{{ url_for(request.url_rule.endpoint, sort=sort_order_opp) }}">
+    <a class="w3-btn w3-round w3-light-grey" href="{{ url_for(request.url_rule.endpoint, sort=sort_order_opp) }}">
         <div id="sort_order">Sort {{ sort_order_opp }}</div>
     </a>
-    <a class="w3-btn w3-light-grey" href="{{ url_for('rss_feed.bookmarked_index') }}">
+    <a class="w3-btn w3-round w3-light-grey" href="{{ url_for('rss_feed.bookmarked_index') }}">
         <div id="bookmark">Bookmarks</div>
     </a>
     {% endif %}
@@ -49,7 +51,7 @@
 {% endif %}
 <script type="text/javascript" src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 {% for item in items %}
-<article class="w3-card w3-margin-bottom w3-leftbar w3-border-light-blue item {% if item.UserItem.read %}read w3-hide{% else %}unread{% endif %}" id="{{ item.Item.id }}">
+<article class="w3-round w3-card w3-margin-bottom w3-leftbar item {% if item.UserItem.read %}w3-border-pale-blue read w3-hide{% else %}w3-border-light-blue unread{% endif %}" id="{{ item.Item.id }}">
     <div class="w3-container">
         <header>
             {% if item.UserItem.bookmark %}
@@ -80,9 +82,9 @@
             <p>{{ item.Item.description|safe|truncate }}</p>
             <p>
                 {% if item.UserItem.read %}
-                    <a class="w3-btn w3-light-grey marker" data-id="{{ item.Item.id }}" data-read="true">Mark Unread</a>
+                    <a class="w3-btn w3-round w3-light-grey marker" data-id="{{ item.Item.id }}" data-read="true">Mark Unread</a>
                 {% else %}
-                    <a class="w3-btn w3-light-grey marker" data-id="{{ item.Item.id }}" data-read="false">Mark Read</a>
+                    <a class="w3-btn w3-round w3-light-grey marker" data-id="{{ item.Item.id }}" data-read="false">Mark Read</a>
                 {% endif %}
             </p>
         </div>
