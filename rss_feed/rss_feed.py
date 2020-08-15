@@ -39,7 +39,7 @@ def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookma
 
 @bp.errorhandler(404)
 def error_handler(error):
-    if type(error) == str:
+    if isinstance(error, str):
         flash(error)
     return redirect(url_for('rss_feed.index'))
 
@@ -78,14 +78,15 @@ def feed_index(feed_id):
     items = query_items(user_id=user_id,
                         order=order_by, feed_id=feed_id)
 
-    return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id, sort_order_opp=sort_order_opp)
+    return render_template('rss_feed/index.html',
+                           items=items, feed_name=feed_name,
+                           feed_id=feed_id, sort_order_opp=sort_order_opp)
 
 
 @bp.route('/bookmarks', defaults={'feed_id': None})
 @bp.route('/<int:feed_id>/bookmarks')
 @login_required
 def bookmarked_index(feed_id):
-    
     user_id = g.user.id
     sort_param = request.args.get('sort', None)
     if sort_param == 'Ascending':
@@ -98,11 +99,13 @@ def bookmarked_index(feed_id):
         feed_name = Feed.query.get(feed_id).name
         items = query_items(user_id=user_id, order=order_by,
                             feed_id=feed_id, bookmarks_only=True)
-        return render_template('rss_feed/index.html', items=items, feed_name=feed_name, feed_id=feed_id, sort_order_opp=sort_order_opp)
-    else:
-        items = query_items(user_id=user_id,
-                            order=order_by, bookmarks_only=True)
-        return render_template('rss_feed/index.html', items=items, sort_order_opp=sort_order_opp)
+        return render_template('rss_feed/index.html', 
+                               items=items, feed_name=feed_name, 
+                               feed_id=feed_id, sort_order_opp=sort_order_opp)
+
+    items = query_items(user_id=user_id,
+                        order=order_by, bookmarks_only=True)
+    return render_template('rss_feed/index.html', items=items, sort_order_opp=sort_order_opp)
 
 
 @bp.route('/add_feed', methods=('GET', 'POST'))
