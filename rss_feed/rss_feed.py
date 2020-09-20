@@ -3,10 +3,11 @@ from urllib.parse import urlparse, urlunparse
 from urllib.request import urlopen
 from urllib.error import URLError, HTTPError
 from datetime import datetime
+import time
 import re
 
 from flask import (Blueprint, flash, g, redirect, render_template, request,
-                   url_for, jsonify)
+                   url_for, jsonify, make_response)
 from werkzeug.exceptions import abort
 from dateutil.parser import parse
 from flask_sqlalchemy import SQLAlchemy
@@ -46,6 +47,9 @@ def error_handler(error):
 @bp.route('/')
 @login_required
 def index():
+    last_updated = request.cookies.get('lastUpdated', '0')
+    if time.time() - float(last_updated) > 1800: # 30 minutes
+        return redirect(url_for('rss_feed.get_items'))
     user_id = g.user.id
     sort_param = request.args.get('sort', None)
     if sort_param == 'Ascending':
@@ -62,6 +66,9 @@ def index():
 @bp.route('/<int:feed_id>')
 @login_required
 def feed_index(feed_id):
+    last_updated = request.cookies.get('lastUpdated', '0')
+    if time.time() - float(last_updated) > 1800: # 30 minutes
+        return redirect(url_for('rss_feed.get_items', feed_id=feed_id))
     user_id = g.user.id
     sort_param = request.args.get('sort', None)
     if sort_param == 'Ascending':
@@ -216,10 +223,16 @@ def get_items(feed_id):
         else:
             abort(404, "No such feed")
     else:
-        return redirect(url_for('add_feed'))
+        response = make_response(redirect(url_for('add_feed')))
+        response.set_cookie('lastUpdated', str(time.time()), max_age=5000000)
+        return response
     if feed_id:
-        return redirect(url_for('rss_feed.feed_index', feed_id=feed_id))
-    return redirect(url_for('rss_feed.index'))
+        response = make_response(redirect(url_for('rss_feed.feed_index', feed_id=feed_id)))
+        response.set_cookie('lastUpdated', str(time.time()), max_age=5000000)
+        return response
+    response = make_response(redirect(url_for('rss_feed.index')))
+    response.set_cookie('lastUpdated', str(time.time()), max_age=5000000)
+    return response
 
 
 def download_items(url, feed_id, user_id):
