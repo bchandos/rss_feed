@@ -1,0 +1,20 @@
+@media (prefers-color-scheme: dark) {
+    body {
+        color:#fff!important;
+        background-color:#616161!important;
+    }
+
+    .nav-dark {
+        color:#fff!important;
+        background-color:#3f51b5!important
+    }
+
+    .btn-dark {
+        color:#fff!important;
+        background-color:#607d8b!important
+    }
+    .no-more-dark {
+        color:#fff!important;
+        background-color:#607d8b!important
+    }
+}

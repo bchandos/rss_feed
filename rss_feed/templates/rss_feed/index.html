@@ -23,19 +23,19 @@
 
 {% block content %}
 <div class="w3-bar">
-    <a class="w3-btn w3-round w3-light-grey w3-small" id="show_read">Show Read</a>
+    <a class="w3-btn w3-round w3-light-grey w3-small btn-dark" id="show_read">Show Read</a>
     {% if feed_name %}
-    <a class="w3-btn w3-round w3-light-grey w3-small" href="{{ url_for(request.url_rule.endpoint, feed_id=feed_id, sort=sort_order_opp) }}">
+    <a class="w3-btn w3-round w3-light-grey w3-small btn-dark" href="{{ url_for(request.url_rule.endpoint, feed_id=feed_id, sort=sort_order_opp) }}">
         <div id="sort_order">Sort {{ sort_order_opp }}</div>
     </a>
-    <a class="w3-btn w3-round w3-light-grey w3-small" href="{{ url_for('rss_feed.bookmarked_index', feed_id=feed_id) }}">
+    <a class="w3-btn w3-round w3-light-grey w3-small btn-dark" href="{{ url_for('rss_feed.bookmarked_index', feed_id=feed_id) }}">
         <div id="bookmark">Feed Bookmarks</div>
     </a>
     {% else %}
-    <a class="w3-btn w3-round w3-light-grey w3-small" href="{{ url_for(request.url_rule.endpoint, sort=sort_order_opp) }}">
+    <a class="w3-btn w3-round w3-light-grey w3-small btn-dark" href="{{ url_for(request.url_rule.endpoint, sort=sort_order_opp) }}">
         <div id="sort_order">Sort {{ sort_order_opp }}</div>
     </a>
-    <a class="w3-btn w3-round w3-light-grey w3-small" href="{{ url_for('rss_feed.bookmarked_index') }}">
+    <a class="w3-btn w3-round w3-light-grey w3-small btn-dark" href="{{ url_for('rss_feed.bookmarked_index') }}">
         <div id="bookmark">Bookmarks</div>
     </a>
     {% endif %}
@@ -82,14 +82,16 @@
             <p>{{ item.Item.description|safe|truncate }}</p>
             <p>
                 {% if item.UserItem.read %}
-                    <a class="w3-btn w3-round w3-light-grey marker" data-id="{{ item.Item.id }}" data-read="true">Mark Unread</a>
+                    <a class="w3-btn w3-round w3-light-grey marker btn-dark" data-id="{{ item.Item.id }}" data-read="true">Mark Unread</a>
                 {% else %}
-                    <a class="w3-btn w3-round w3-light-grey marker" data-id="{{ item.Item.id }}" data-read="false">Mark Read</a>
+                    <a class="w3-btn w3-round w3-light-grey marker btn-dark" data-id="{{ item.Item.id }}" data-read="false">Mark Read</a>
                 {% endif %}
             </p>
         </div>
     </article>
     {% endfor %}
     
-    <div class="w3-panel w3-pale-green w3-display-container">No more articles in feed.</div>
+    <div class="w3-panel w3-pale-green no-more-dark">
+        <p>No more articles in feed.</p>
+    </div>
     {% endblock %}
