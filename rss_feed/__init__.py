@@ -12,8 +12,9 @@ def create_app(test_config=None):
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(SECRET_KEY='dev')
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + \
-        os.path.join(app.instance_path, 'rss_feed.db')
+    # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + \
+    #     os.path.join(app.instance_path, 'rss_feed.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     if test_config is None:
