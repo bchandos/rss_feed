@@ -338,7 +338,7 @@ def mark_read_all(feed_id):
         db.session.commit()
         return redirect(url_for('rss_feed.index'))
     else:
-        UserItem.query.filter(Item.feed_id==feed.id, UserItem.user_id==user_id).update({'read': True})
+        UserItem.query.filter(Item.feed_id==feed_id, UserItem.user_id==user_id).update({'read': True})
         # all_items = db.execute(
         #     'SELECT id FROM items WHERE feed_id = ?', (feed_id,)).fetchall()
         # for item in all_items:
