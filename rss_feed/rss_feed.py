@@ -287,13 +287,9 @@ def mark_read():
         user_item = UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==id).first()
         if user_item.read == 0:
             user_item.read = True
-            # db.execute(
-            #     'UPDATE user_items SET read = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
             new_status = 'Read'
         else:
             user_item.read = False
-            # db.execute(
-            #     'UPDATE user_items SET read = 0 WHERE item_id = ? AND user_id = ?', (id, user_id))
             new_status = 'Unread'
         db.session.add(user_item)
         db.session.commit()
@@ -310,16 +306,10 @@ def bookmark():
         user_item = UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==id).first()
         if marked == 'true':
             user_item.bookmark = False
-            # db.execute(
-            #     'UPDATE user_items SET bookmark = 0 WHERE item_id = ? AND user_id = ?', (id, user_id))
             bm = 'false'
-            # u = url_for('static', filename='icons/bookmark-icon.svg')
         else:
             user_item.bookmark = True
-            # db.execute(
-            #     'UPDATE user_items SET bookmark = 1 WHERE item_id = ? AND user_id = ?', (id, user_id))
             bm = 'true'
-            # u = url_for('static', filename='icons/bookmark-red-icon.svg')
         db.session.add(user_item)
         db.session.commit()
         return jsonify(id=id, bookmark=bm)
@@ -333,17 +323,13 @@ def mark_read_all(feed_id):
     
     if not feed_id:
         UserItem.query.filter(UserItem.user_id==user_id).update({'read': True})
-        # db.execute(
-        #     'UPDATE user_items SET read = 1 WHERE user_id = ?', (user_id,))
         db.session.commit()
         return redirect(url_for('rss_feed.index'))
     else:
-        UserItem.query.filter(Item.feed_id==feed_id, UserItem.user_id==user_id).update({'read': True})
-        # all_items = db.execute(
-        #     'SELECT id FROM items WHERE feed_id = ?', (feed_id,)).fetchall()
-        # for item in all_items:
-        #     db.execute(
-        #         'UPDATE user_items SET read = 1 WHERE item_id = ? AND user_id = ?', (item['id'], user_id))
+
+        all_items = UserItem.query.filter(Item.feed_id==feed_id, UserItem.user_id==user_id)
+        for item in all_items:
+            item.read = True
         db.session.commit()
         return redirect(url_for('rss_feed.feed_index', feed_id=feed_id))
 
