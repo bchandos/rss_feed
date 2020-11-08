@@ -223,7 +223,7 @@ def get_items(feed_id):
         else:
             abort(404, "No such feed")
     else:
-        response = make_response(redirect(url_for('add_feed')))
+        response = make_response(redirect(url_for('rss_feed.add_feed')))
         response.set_cookie('lastUpdated', str(time.time()), max_age=5000000)
         return response
     if feed_id:
