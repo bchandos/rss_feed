@@ -49,7 +49,6 @@
     </a>
 </div>
 {% endif %}
-<script type="text/javascript" src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 {% for item in items %}
 <article class="w3-round w3-card w3-margin-bottom w3-leftbar item {% if item.UserItem.read %}w3-border-pale-blue read w3-hide{% else %}w3-border-light-blue unread{% endif %}" id="{{ item.Item.id }}">
     <div class="w3-container">
