@@ -11,7 +11,7 @@ from flask import (Blueprint, flash, g, redirect, render_template, request,
 from werkzeug.exceptions import abort
 from dateutil.parser import parse
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 
 from rss_feed.auth import login_required, debug_only
 from rss_feed.models import User, Feed, UserFeed, UserItem, Item, db
@@ -36,6 +36,14 @@ def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookma
                     UserItem.bookmark.in_(bm_options)).\
                     order_by(order_option).\
                     limit(limit).offset(offset).all()
+
+@bp.before_app_first_request
+def check_db():
+    try:
+        db.create_all()
+        db.session.commit()
+    except:
+        raise
 
 
 @bp.errorhandler(404)
