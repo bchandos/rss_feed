@@ -117,3 +117,4 @@ dmypy.json
 
 # Project specific
 TODO.md
+.devcontainer/
