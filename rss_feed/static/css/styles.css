@@ -22,4 +22,7 @@
         background-color:#9e9e9e!important;
         border: none!important;
     }
+    .dark-striped tbody tr:nth-child(2n) {
+        background-color: #9e9e9e;
+    }
 }
