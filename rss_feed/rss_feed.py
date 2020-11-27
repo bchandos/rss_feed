@@ -2,7 +2,7 @@ import xml.etree.ElementTree as ET
 from urllib.parse import urlparse, urlunparse
 from urllib.request import urlopen
 from urllib.error import URLError, HTTPError
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import re
 
@@ -224,10 +224,12 @@ def get_items(feed_id):
         if feed_id and feed_id in g.user_feed_group:
             feed = get_feed(feed_id)
             download_items(feed.Feed.url, feed_id, user_id)
+            delete_items(user_id, feed_id)
         elif not feed_id:
             for user_feed_id in g.user_feed_group:
                 feed = get_feed(int(user_feed_id))
                 download_items(feed.Feed.url, user_feed_id, user_id)
+                delete_items(user_id, user_feed_id)
         else:
             abort(404, "No such feed")
     else:
@@ -280,6 +282,22 @@ def download_items(url, feed_id, user_id):
                             db.session.add(new_ui)
                     db.session.commit()
 
+
+def delete_items(user_id, feed_id):
+    # Get rid of old, read, unbookmarked items
+    old_items = db.session.query(UserItem, Item).join(Item).filter(
+        UserItem.user_id==user_id,
+        UserItem.read==True,
+        UserItem.bookmark==False,
+        Item.feed_id==feed_id
+    )
+    for item_ in old_items:
+        user_item = item_.UserItem
+        item = item_.Item
+        thirty_days_ago = datetime.now() - timedelta(days=30)
+        if float(item.publication_date) < datetime.timestamp(thirty_days_ago):
+            db.session.delete(user_item)
+    db.session.commit()
 
 @bp.app_template_filter()
 def datetimeformat(value, format='%m-%d-%Y @ %H:%M'):
