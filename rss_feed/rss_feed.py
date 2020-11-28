@@ -297,7 +297,10 @@ def delete_items(user_id, feed_id):
         two_weeks_ago = datetime.now() - timedelta(days=14)
         if float(item.publication_date) < datetime.timestamp(two_weeks_ago):
             db.session.delete(user_item)
+            if len(item.user_items) <= 1:
+                db.session.delete(item)
     db.session.commit()
+
 
 @bp.app_template_filter()
 def datetimeformat(value, format='%m-%d-%Y @ %H:%M'):

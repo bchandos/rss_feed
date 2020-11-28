@@ -27,6 +27,8 @@ class Item(db.Model):
     publication_date = db.Column(db.String)
     guid = db.Column(db.String, unique=True)
 
+    user_items = db.relationship('UserItem', backref='item')
+
 class UserFeed(db.Model):
     __tablename__ = 'user_feed'
     user_id = db.Column(db.ForeignKey('user.id'), primary_key=True)
