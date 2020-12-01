@@ -69,13 +69,62 @@ $(function () {
 $(function () {
     $("#show_read").on("click", function () {
         _state.showRead = !_state.showRead;
+        let btn = $('#more-articles-btn');
         if (_state.showRead) {
             $("article.read").removeClass("w3-hide");
             $(this).text("Hide Read");
+            if (btn.attr('more-unread') === 'True') {
+                btn.addClass('w3-show');
+                btn.removeClass('w3-hide');
+            }
         }
         else {
             $("article.read").addClass("w3-hide");
             $(this).text("Show Read");
+            if (btn.attr('more-unread') === 'True' && btn.attr('more-read') === 'False') {
+                btn.addClass('w3-hide');
+                btn.removeClass('w3-show');
+            }
         }
     });
 });
+
+
+// Show more button...
+
+$(function() {
+    let btn = $('#more-articles-btn');
+    if (btn.attr('more-read') === 'True') {
+        btn.addClass('w3-show');
+        btn.removeClass('w3-hide')
+    } else if (btn.attr('more-unread') === 'True' && _state.showRead) {
+        btn.addClass('w3-show');
+        btn.removeClass('w3-hide')
+    } else {
+        btn.addClass('w3-hide');
+        btn.removeClass('w3-show');
+    }
+
+})
+
+$(function () {
+    $('#more-articles-btn').on('click', function() {
+        let startAt = $this.attr('article-count');
+        let feedId = $this.attr('feed-id');
+        $.get($SCRIPT_ROOT + '/_more_articles', {
+            feed_id: feedId || '',
+            start_at: startAt
+        }, function (response) {
+            $('#more-articles-target').replaceWith(response);
+            // New articles will be hidden by default; set visibility 
+            // based on current showRead state
+            if (_state.showRead) {
+                $("article.read").removeClass("w3-hide");
+            }
+            else {
+                $("article.read").addClass("w3-hide");
+                $(this).text("Show Read");
+            }
+        });
+    });
+})

@@ -64,33 +64,45 @@
                 </a>
                 
             {% endif %}
-                    <a href="{{ item.Item.link }}">
-                        <h3>{{ item.Item.title }}</h3>
-                    </a>
-                    <em>from 
-                        <a href="/{{ item.Item.feed_id }}">
-                            {% if item.UserFeed.user_feed_name %}
-                            {{ item.UserFeed.user_feed_name }}
-                            {% else %}
-                            {{ item.Feed.name }}
-                            {% endif %}
-                        </a> 
-                        on {{ item.Item.publication_date|datetimeformat }}
-                    </em>
-            </header>
-            <p>{{ item.Item.description|safe|truncate }}</p>
-            <p>
-                {% if item.UserItem.read %}
-                    <a class="w3-btn w3-round w3-light-grey marker btn-dark" data-id="{{ item.Item.id }}" data-read="true">Mark Unread</a>
-                {% else %}
-                    <a class="w3-btn w3-round w3-light-grey marker btn-dark" data-id="{{ item.Item.id }}" data-read="false">Mark Read</a>
-                {% endif %}
-            </p>
-        </div>
-    </article>
-    {% endfor %}
-    
-    <div class="w3-panel w3-pale-green no-more-dark">
-        <p>No more articles in feed.</p>
+            <a href="{{ item.Item.link }}">
+                <h3>{{ item.Item.title }}</h3>
+            </a>
+            <em>from 
+                <a href="/{{ item.Item.feed_id }}">
+                    {% if item.UserFeed.user_feed_name %}
+                    {{ item.UserFeed.user_feed_name }}
+                    {% else %}
+                    {{ item.Feed.name }}
+                    {% endif %}
+                </a> 
+                on {{ item.Item.publication_date|datetimeformat }}
+            </em>
+        </header>
+        <p>{{ item.Item.description|safe|truncate }}</p>
+        <p>
+            {% if item.UserItem.read %}
+                <a class="w3-btn w3-round w3-light-grey marker btn-dark" data-id="{{ item.Item.id }}" data-read="true">Mark Unread</a>
+            {% else %}
+                <a class="w3-btn w3-round w3-light-grey marker btn-dark" data-id="{{ item.Item.id }}" data-read="false">Mark Read</a>
+            {% endif %}
+        </p>
     </div>
-    {% endblock %}
+</article>
+{% endfor %}
+<span id="more-articles-target">
+    <button 
+        id="more-articles-btn" 
+        article-count="{{ (items | length) + 1 }}" 
+        {% if feed_name %}feed-id="{{ feed_id }}"{% endif %} 
+        class="w3-btn w3-round w3-light-grey btn-dark w3-block"
+        more-read="{{more_read}}"
+        more-unread="{{more_unread}}"
+    >
+        Load More Articles
+    </button>
+</span>
+    
+<div class="w3-panel w3-pale-green no-more-dark">
+    <p>No more articles in feed.</p>
+</div>
+{% endblock %}

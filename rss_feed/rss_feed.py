@@ -1,3 +1,5 @@
+# pylint: disable=no-member
+
 import xml.etree.ElementTree as ET
 from urllib.parse import urlparse, urlunparse
 from urllib.request import urlopen
@@ -66,9 +68,22 @@ def index():
     else:
         order_by = 'DESC'
         sort_order_opp = 'Ascending'
-    items = query_items(user_id=user_id, order=order_by)
+    items = query_items(user_id=user_id, order=order_by, limit=105)
 
-    return render_template('rss_feed/index.html', items=items, sort_order_opp=sort_order_opp)
+    more_read = False
+    more_unread = False
+    if len(items) > 100:
+        xtra_items = items[100:]
+        more_unread = any([i.UserItem.read for i in xtra_items])
+        more_read = any([not i.UserItem.read for i in xtra_items])
+
+    return render_template(
+        'rss_feed/index.html', 
+        items=items[:100], 
+        sort_order_opp=sort_order_opp,
+        more_read=more_read,
+        more_unread=more_unread,
+        )
 
 
 @bp.route('/<int:feed_id>')
@@ -91,11 +106,24 @@ def feed_index(feed_id):
     else:
         feed_name = Feed.query.get(feed_id).name    
     items = query_items(user_id=user_id,
-                        order=order_by, feed_id=feed_id)
+                        order=order_by, feed_id=feed_id, limit=105)
 
-    return render_template('rss_feed/index.html',
-                           items=items, feed_name=feed_name,
-                           feed_id=feed_id, sort_order_opp=sort_order_opp)
+    more_read = False
+    more_unread = False
+    if len(items) > 100:
+        xtra_items = items[100:]
+        more_unread = any([i.UserItem.read for i in xtra_items])
+        more_read = any([not i.UserItem.read for i in xtra_items])
+
+    return render_template(
+        'rss_feed/index.html',
+        items=items[:100], 
+        feed_name=feed_name,
+        feed_id=feed_id, 
+        sort_order_opp=sort_order_opp,
+        more_read=more_read,
+        more_unread=more_unread,
+        )
 
 
 @bp.route('/bookmarks', defaults={'feed_id': None})
@@ -114,13 +142,25 @@ def bookmarked_index(feed_id):
         feed_name = Feed.query.get(feed_id).name
         items = query_items(user_id=user_id, order=order_by,
                             feed_id=feed_id, bookmarks_only=True)
-        return render_template('rss_feed/index.html', 
-                               items=items, feed_name=feed_name, 
-                               feed_id=feed_id, sort_order_opp=sort_order_opp)
+        return render_template(
+            'rss_feed/index.html', 
+            items=items, 
+            feed_name=feed_name, 
+            feed_id=feed_id, 
+            sort_order_opp=sort_order_opp,
+            more_read=True,
+            more_unread=False,
+            )
 
     items = query_items(user_id=user_id,
                         order=order_by, bookmarks_only=True)
-    return render_template('rss_feed/index.html', items=items, sort_order_opp=sort_order_opp)
+    return render_template(
+        'rss_feed/index.html', 
+        items=items, 
+        sort_order_opp=sort_order_opp,
+        more_read=True,
+        more_unread=False,
+        )
 
 
 @bp.route('/add_feed', methods=('GET', 'POST'))
@@ -297,8 +337,8 @@ def delete_items(user_id, feed_id):
         two_weeks_ago = datetime.now() - timedelta(days=14)
         if float(item.publication_date) < datetime.timestamp(two_weeks_ago):
             db.session.delete(user_item)
-            if len(item.user_items) <= 1:
-                db.session.delete(item)
+            # if len(item.user_items) <= 1:
+            #     db.session.delete(item)
     db.session.commit()
 
 
@@ -381,3 +421,33 @@ def test_flash():
     # debugging endpoint to test flash messaging
     flash('This is a test of the flash system.')
     return redirect(url_for('rss_feed.index'))
+
+
+@bp.route('/_more_articles/')
+@login_required
+def more_articles():
+    feed_id = int(request.args.get('feed_id'))
+    start_at = int(request.args.get('start_at'))
+    items = query_items(
+        g.user.id, 
+        order='DESC', 
+        limit=105, 
+        offset=start_at, 
+        feed_id=feed_id, 
+        bookmarks_only=False
+    )
+
+    more_read = False
+    more_unread = False
+    if len(items) > 100:
+        xtra_items = items[100:]
+        more_unread = any([i.UserItem.read for i in xtra_items])
+        more_read = any([not i.UserItem.read for i in xtra_items])
+
+    return render_template(
+        'rss_feed/more_articles.html', 
+        items=items[:100],
+        more_read=more_read,
+        more_unread=more_unread,
+        new_length=start_at + len(items),
+    )
