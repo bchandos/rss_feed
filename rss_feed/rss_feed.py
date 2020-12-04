@@ -334,11 +334,11 @@ def delete_items(user_id, feed_id):
     for item_ in old_items:
         user_item = item_.UserItem
         item = item_.Item
-        two_weeks_ago = datetime.now() - timedelta(days=14)
-        if float(item.publication_date) < datetime.timestamp(two_weeks_ago):
+        thirty_days_ago = datetime.now() - timedelta(days=30)
+        if float(item.publication_date) < datetime.timestamp(thirty_days_ago):
             db.session.delete(user_item)
-            # if len(item.user_items) <= 1:
-            #     db.session.delete(item)
+            if len(item.user_items) <= 1:
+                db.session.delete(item)
     db.session.commit()
 
 
