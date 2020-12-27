@@ -221,13 +221,17 @@ def edit_feed(id):
         feed_url = request.form['feed_url']
         if request.form['feed_name'] != feed.Feed.name:
             custom_name = request.form['feed_name']
+        auto_expire = request.form.get('auto-expire', 'off') == 'on'
+        preview_articles = request.form.get('content-preview', 'off') == 'on'
         feed.Feed.url = feed_url
         db.session.add(feed.Feed)
-        if custom_name:
-            uf = UserFeed.query.filter(UserFeed.user_id==g.user.id, UserFeed.feed_id==id).first()
-            uf.user_feed_name = custom_name
-            db.session.add(uf)
+        uf = UserFeed.query.filter(UserFeed.user_id==g.user.id, UserFeed.feed_id==id).first()
+        uf.user_feed_name = custom_name
+        uf.auto_expire = auto_expire
+        uf.preview_articles = preview_articles
+        db.session.add(uf)
         db.session.commit()
+        flash(f'Feed id {id} updated.')
         return redirect(url_for('rss_feed.index'))
     return render_template('rss_feed/edit.html', feed=feed)
 
@@ -264,11 +268,15 @@ def get_items(feed_id):
         if feed_id and feed_id in g.user_feed_group:
             feed = get_feed(feed_id)
             download_items(feed.Feed.url, feed_id, user_id)
+            if feed.auto_expire:
+                expire_items(user_id, feed_id)
             delete_items(user_id, feed_id)
         elif not feed_id:
             for user_feed_id in g.user_feed_group:
                 feed = get_feed(int(user_feed_id))
                 download_items(feed.Feed.url, user_feed_id, user_id)
+                if feed.auto_expire:
+                    expire_items(user_id, user_feed_id)
                 delete_items(user_id, user_feed_id)
         else:
             abort(404, "No such feed")
@@ -294,6 +302,7 @@ def download_items(url, feed_id, user_id):
         with f:
             if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
                 xml_file = ET.fromstring(f.read())
+                ns = {'content': 'http://purl.org/rss/1.0/modules/content/'}
                 for item in xml_file[0].findall('item'):
                     title = item.find('title').text
                     link = item.find('link').text
@@ -306,11 +315,15 @@ def download_items(url, feed_id, user_id):
                             parse(item.find('pubDate').text))
                     else:
                         publication_date = datetime.timestamp(datetime.today())
+                    if item.find('content:encoded', ns) is not None:
+                        content = item.find('content:encoded', ns).text
+                    else:
+                        content = None
                     guid = item.find('guid').text
                     item_exists = Item.query.filter(Item.guid==guid).first()
                     if not item_exists:
                         # Only create item if it doesn't exist
-                        new_item = Item(feed_id=feed_id, title=title, link=link, description=description, publication_date=publication_date, guid=guid)
+                        new_item = Item(feed_id=feed_id, title=title, link=link, description=description, publication_date=publication_date, guid=guid, content=content)
                         db.session.add(new_item)
                         db.session.commit()
                         new_ui = UserItem(user_id=user_id, item_id=new_item.id)
@@ -339,6 +352,21 @@ def delete_items(user_id, feed_id):
             db.session.delete(user_item)
             if len(item.user_items) <= 1:
                 db.session.delete(item)
+    db.session.commit()
+
+def expire_items(user_id, feed_id):
+    # Auto mark-read for items older than 2 days
+    old_items = db.session.query(UserItem, Item).join(Item).filter(
+        UserItem.user_id==user_id,
+        UserItem.read==False,
+        Item.feed_id==feed_id
+    )
+    for item_ in old_items:
+        user_item = item_.UserItem
+        item = item_.Item
+        two_days_ago = datetime.now() - timedelta(days=2)
+        if float(item.publication_date) < datetime.timestamp(two_days_ago):
+            user_item.read = True
     db.session.commit()
 
 
@@ -382,6 +410,14 @@ def bookmark():
         db.session.add(user_item)
         db.session.commit()
         return jsonify(id=id, bookmark=bm)
+
+
+@bp.route('/_article_contents')
+def article_contents():
+    id = request.args.get('id', 0, type=int)
+    if id:
+        item = Item.query.get(id)
+        return jsonify(article_contents=item.content)
 
 
 @bp.route('/mark_read_all', defaults={'feed_id': None})
