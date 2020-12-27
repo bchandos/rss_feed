@@ -3,12 +3,12 @@
     "short_name": "RSS Feed",
     "description": "RSS feed aggregator.",
     "start_url": "/",
-    "background_color": "#99e1d9",
-    "theme_color": "#3b8ea3",
+    "background_color": "#616161",
+    "theme_color": "#3f51b5",
     "display": "standalone",
     "icons": [
         {
-            "src": "rss-feed-icon.svg",
+            "src": "icons/rss-feed-icon.svg",
             "sizes": "32x32 64x64 128x128 256x256 512x512"
         }
     ]
