@@ -42,12 +42,16 @@
 </div>
 {% if feed_name %}
 <div class="w3-container w3-margin-bottom">
+    <a href="{{ url_for('rss_feed.index') }}"><i class="material-icons">home</i></a>
+    <span> > </span>
     <a href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}">{{ feed_name }}</a>
     <a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">
         <!-- <img class="icon" src="{{ url_for('static', filename='icons/settings-icon.svg') }}" alt="Feed Settings" /> -->
-        <i class="material-icons w3-small">settings</i>
+        <i class="material-icons">settings</i>
     </a>
 </div>
+{% else %}
+<div class="w3-margin-bottom"></div>
 {% endif %}
 {% for item in items %}
 <article class="w3-round w3-card w3-margin-bottom w3-leftbar item {% if item.UserItem.read %}w3-border-pale-blue read w3-hide{% else %}w3-border-light-blue unread{% endif %}" id="{{ item.Item.id }}">
@@ -57,16 +61,20 @@
                 <a class="w3-right w3-button w3-circle bookmark w3-xlarge" data-id="{{ item.Item.id }}" data-marked="true">
                     <i class="material-icons">bookmark</i>
                 </a>
-                
-                {% else %}
+            {% else %}
                 <a class="w3-right w3-button w3-circle bookmark w3-xlarge" data-id="{{ item.Item.id }}" data-marked="false">
                     <i class="material-icons">bookmark_border</i>
                 </a>
-                
             {% endif %}
-            <a href="{{ item.Item.link }}">
-                <h3>{{ item.Item.title }}</h3>
-            </a>
+            {% if item.UserFeed.preview_articles %}
+                <a class="article-preview" data-id="{{ item.Item.id }}" style="cursor: pointer; text-decoration: underline;">
+                    <h3>{{ item.Item.title }}</h3>
+                </a>
+            {% else %}
+                <a href="{{ item.Item.link }}" target="_blank">
+                    <h3>{{ item.Item.title }}</h3>
+                </a>
+            {% endif %}
             <em>from 
                 <a href="/{{ item.Item.feed_id }}">
                     {% if item.UserFeed.user_feed_name %}
