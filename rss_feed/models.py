@@ -26,6 +26,7 @@ class Item(db.Model):
     title = db.Column(db.String)
     link = db.Column(db.String)
     description = db.Column(db.String)
+    content = db.Column(db.Text)
     publication_date = db.Column(db.String)
     guid = db.Column(db.String, unique=True)
 
@@ -36,6 +37,8 @@ class UserFeed(db.Model):
     user_id = db.Column(db.ForeignKey('user.id'), primary_key=True)
     feed_id = db.Column(db.ForeignKey('feed.id'), primary_key=True)
     user_feed_name = db.Column(db.String)
+    auto_expire = db.Column(db.Boolean, default=False)
+    preview_articles = db.Column(db.Boolean, default=False)
 
 class UserItem(db.Model):
     __tablename__ = 'user_item'

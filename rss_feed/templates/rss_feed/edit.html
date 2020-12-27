@@ -28,6 +28,14 @@
                 </p>
                 {% endif %}
                 <p>
+                    <input {% if feed.UserFeed.auto_expire %}checked{% endif %} class="w3-check w3-margin-right" type="checkbox" name="auto-expire" id="auto-expire">
+                    <label class="w3-text-dark-grey" for="auto-expire">Auto mark read items older than 2 days</label>
+                </p>
+                <p>
+                    <input {% if feed.UserFeed.preview_articles %}checked{% endif %} class="w3-check w3-margin-right" type="checkbox" name="content-preview" id="content-preview">
+                    <label class="w3-text-dark-grey" for="content-preview">Preview article contents in app</label>
+                </p>
+                <p>
                     <input class="w3-btn w3-light-blue" type="submit" value="Save Edits">
                     <a class="w3-btn w3-red w3-right" data-feedID="{{feed.Feed.id}}" onclick="deleteFeed(this);">Delete</a>
                 </p>
