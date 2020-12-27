@@ -109,8 +109,8 @@ $(function() {
 
 $(function () {
     $('#more-articles-btn').on('click', function() {
-        let startAt = $this.attr('article-count');
-        let feedId = $this.attr('feed-id');
+        let startAt = $(this).attr('article-count');
+        let feedId = $(this).attr('feed-id');
         $.get($SCRIPT_ROOT + '/_more_articles', {
             feed_id: feedId || '',
             start_at: startAt
@@ -127,4 +127,17 @@ $(function () {
             }
         });
     });
+})
+
+// Article preview modal
+$(function () {
+    $('.article-preview').on('click', function() {
+        let articleId = $(this).attr('data-id');
+            $.get($SCRIPT_ROOT + '/_article_contents', {
+            id: articleId
+        }, function(response) {
+            $('#article-content-target').html(response.article_contents);
+            $('#article-content-modal').removeClass('w3-hide').addClass('w3-show');
+        })
+    })
 })

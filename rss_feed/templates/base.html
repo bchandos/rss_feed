@@ -60,5 +60,14 @@
             </div>
         </div>
     </div>
+    <div id="article-content-modal" class="w3-modal">
+        <div class="w3-modal-content w3-round"  style="color:#fff; background-color:#616161; height: 95%; overflow: auto;">
+          <div class="w3-container">
+            <span onclick="$('#article-content-modal').removeClass('w3-show').addClass('w3-hide');"
+            class="w3-button w3-display-topright">&times;</span>
+            <div id="article-content-target"></div>
+          </div>
+        </div>
+      </div>
     <script type="text/javascript" src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 </body>
