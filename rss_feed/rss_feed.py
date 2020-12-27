@@ -268,14 +268,14 @@ def get_items(feed_id):
         if feed_id and feed_id in g.user_feed_group:
             feed = get_feed(feed_id)
             download_items(feed.Feed.url, feed_id, user_id)
-            if feed.auto_expire:
+            if feed.UserFeed.auto_expire:
                 expire_items(user_id, feed_id)
             delete_items(user_id, feed_id)
         elif not feed_id:
             for user_feed_id in g.user_feed_group:
                 feed = get_feed(int(user_feed_id))
                 download_items(feed.Feed.url, user_feed_id, user_id)
-                if feed.auto_expire:
+                if feed.UserFeed.auto_expire:
                     expire_items(user_id, user_feed_id)
                 delete_items(user_id, user_feed_id)
         else:
