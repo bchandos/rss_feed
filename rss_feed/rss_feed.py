@@ -255,7 +255,6 @@ def delete_feed(id):
     db.session.delete(user_feed)
     db.session.commit()
     flash(f'Feed {feed_name} deleted.')
-    print(request.referrer)
     return redirect(request.referrer)
 
 
@@ -376,10 +375,10 @@ def datetimeformat(value, format='%m-%d-%Y @ %H:%M'):
     return d.strftime(format)
 
 
-@bp.route('/_mark_read')
+@bp.route('/_mark_read', methods=('POST',))
 def mark_read():
     user_id = g.user.id
-    id = request.args.get('id', 0, type=int)
+    id = request.json['id']
     if id:
         user_item = UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==id).first()
         if user_item.read == 0:
@@ -393,11 +392,11 @@ def mark_read():
         return jsonify(id=id, read=new_status)
 
 
-@bp.route('/_bookmark')
+@bp.route('/_bookmark', methods=('POST',))
 def bookmark():
     user_id = g.user.id
-    id = request.args.get('id', 0, type=int)
-    marked = request.args.get('marked', 'false', type=str)
+    id = int(request.json.get('id', 0))
+    marked = request.json.get('marked', 'false')
     
     if id:
         user_item = UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==id).first()
@@ -462,14 +461,14 @@ def test_flash():
 @bp.route('/_more_articles/')
 @login_required
 def more_articles():
-    feed_id = int(request.args.get('feed_id'))
+    feed_id = request.args.get('feed_id')
     start_at = int(request.args.get('start_at'))
     items = query_items(
         g.user.id, 
         order='DESC', 
         limit=105, 
         offset=start_at, 
-        feed_id=feed_id, 
+        feed_id=int(feed_id) if feed_id else None, 
         bookmarks_only=False
     )
 

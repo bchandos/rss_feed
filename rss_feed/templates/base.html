@@ -8,7 +8,6 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"> 
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.js') }}"></script>
 <script type="text/javascript">$SCRIPT_ROOT = {{ request.script_root | tojson | safe }};</script>
 <body>
     <nav class="w3-bar w3-light-blue nav-dark">
@@ -63,8 +62,7 @@
     <div id="article-content-modal" class="w3-modal">
         <div class="w3-modal-content w3-round"  style="color:#fff; background-color:#616161; height: 95%; overflow: auto;">
           <div class="w3-container">
-            <span onclick="$('#article-content-modal').removeClass('w3-show').addClass('w3-hide');"
-            class="w3-button w3-display-topright">&times;</span>
+            <span id="close-article-content-modal" class="w3-button w3-display-topright">&times;</span>
             <div id="article-content-target"></div>
           </div>
         </div>

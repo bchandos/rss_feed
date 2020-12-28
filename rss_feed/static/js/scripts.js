@@ -4,140 +4,169 @@ let _state = {
 
 
 // Delete feed
-function deleteFeed(elem) {
-    let id = $(elem).attr('data-feedID');
-    $('#delete-warning-modal').css('display', 'block');
-    $('#bigScaryDeleteButton').on('click', function () {
-        $('#delete-warning-modal').css('display', '');
-        window.location.href = $SCRIPT_ROOT + '/' + id + '/delete';
+const deleteFeedBtn = document.getElementById('delete-feed-button');
+if (deleteFeedBtn) {
+    deleteFeedBtn.addEventListener('click', (e) => {
+        const feedId = e.target.dataset.feedId;
+        const deleteWarningModal = document.getElementById('delete-warning-modal');
+        const scaryDeleteBtn = document.getElementById('bigScaryDeleteButton');
+        deleteWarningModal.style.display = 'block';
+        scaryDeleteBtn.addEventListener('click', (e) => {
+            window.location.href = `${$SCRIPT_ROOT}/${feedId}/delete`; 
         })
+    })
 }
 
 // Mark Read
-$(function () {
-    $('.marker').on('click', function () {
+const markers = document.querySelectorAll('.marker');
+for (let marker of markers) {
+    marker.addEventListener('click', async (e) => {
         let label;
-        let target = $(this);
-        $.getJSON($SCRIPT_ROOT + '/_mark_read', {
-            id: $(this).attr('data-id')
-        }, function (data) {
-            if (!_state.showRead && data.read == 'Read') {
-                $(`article#${data.id}`).fadeOut("200", function () {
-                    $(`article#${data.id}`).removeClass("unread").addClass("read w3-hide w3-border-pale-blue");
-                    /*  removes the display: none added by fadeOut
-                        and allow the standard CSS to control display */
-                    $(`article#${data.id}`).css("display", "");
-                });
-                label = "Mark Unread";
-            } else if (data.read == 'Read') {
-                $(`article#${data.id}`).removeClass("unread w3-border-light-blue").addClass("read w3-border-pale-blue");
-                label = "Mark Unread";
-            }
-            else {
-                $(`article#${data.id}`).removeClass("read w3-border-pale-blue").addClass("unread w3-border-light-blue");
-                label = "Mark Read";
-            }
-            target.text(label)
+        const target = e.target;
+        const response = await fetch(`${$SCRIPT_ROOT}/_mark_read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: target.dataset.id
+            })
         });
-
-        return false;
+        const json = await response.json();
+        const article = target.closest('article');
+        if (!_state.showRead && json.read === 'Read') {
+            article.addEventListener('transitionend', (e) => {
+                article.classList.remove('unread');
+                article.classList.add('read', 'w3-hide', 'w3-border-pale-blue')
+            });
+            article.style.opacity = 0;
+            label = 'Mark Unread';
+        } else if (json.read === 'Read') {
+            article.classList.remove('unread', 'w3-border-light-blue');
+            article.classList.add('read', 'w3-border-pale-blue');
+            label = 'Mark Unread';
+        } else {
+            article.classList.remove('read', 'w3-border-pale-blue');
+            article.classList.add('unread', 'w3-border-light-blue');
+            label = 'Mark Read';
+        }
+        target.innerText = label;
     });
-});
+}
 
 // Bookmarks
-$(function () {
-    $('.bookmark').on('click', function () {
-        let target = $(this);
-        $.getJSON($SCRIPT_ROOT + '/_bookmark', {
-            id: $(this).attr('data-id'),
-            marked: $(this).attr('data-marked')
-        }, function (data) {
-            if (data.bookmark == 'true') {
-                target.children('i').text('bookmark');
-                target.attr('data-marked', 'true');
-            }
-            else {
-                target.children('i').text('bookmark_border')
-                target.attr('data-marked', 'false');
-            }
+const bookmarks = document.querySelectorAll('.bookmark');
+for (let bookmark of bookmarks) {
+    bookmark.addEventListener('click', async (e) => {
+        const target = e.target;
+        const response = await fetch(`${$SCRIPT_ROOT}/_bookmark`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                id: bookmark.dataset.id,
+                marked: bookmark.dataset.marked
+            })
         });
-    });
-    return false;
-});
+        const json = await response.json();
+        if (json.bookmark === 'true') {
+            target.firstElementChild.innerText = 'bookmark';
+            target.dataset.marked = 'true';
+        } else {
+            target.firstElementChild.innerText = 'bookmark_border';
+            target.dataset.marked = 'false';
+        }
+    })
+}
 
 // Show / hide
-$(function () {
-    $("#show_read").on("click", function () {
-        _state.showRead = !_state.showRead;
-        let btn = $('#more-articles-btn');
-        if (_state.showRead) {
-            $("article.read").removeClass("w3-hide");
-            $(this).text("Hide Read");
-            if (btn.attr('more-unread') === 'True') {
-                btn.addClass('w3-show');
-                btn.removeClass('w3-hide');
-            }
+const showReadBtn = document.getElementById('show_read');
+showReadBtn.addEventListener('click', (e) => {
+    _state.showRead = !_state.showRead;
+    const articlesBtn = document.getElementById('more-articles-btn');
+    if (_state.showRead) {
+        const readArticles = document.querySelectorAll('article.read');
+        for (let readArticle of readArticles) {
+            readArticle.style.opacity = 1;
+            readArticle.classList.remove('w3-hide');
         }
-        else {
-            $("article.read").addClass("w3-hide");
-            $(this).text("Show Read");
-            if (btn.attr('more-unread') === 'True' && btn.attr('more-read') === 'False') {
-                btn.addClass('w3-hide');
-                btn.removeClass('w3-show');
-            }
+        e.target.innerText = 'Hide Read';
+        if (articlesBtn.dataset.moreUnread === 'True') {
+            articlesBtn.classList.add('w3-show');
+            articlesBtn.classList.remove('w3-hide');
         }
-    });
-});
+    } else {
+        const readArticles = document.querySelectorAll('article.read');
+        for (let readArticle of readArticles) {
+            readArticle.classList.add('w3-hide');
+        }
+        e.target.innerText = 'Show Read';
+        if (articlesBtn.dataset.moreUnread === 'True' && articlesBtn.dataset.moreRead === 'False') {
+            articlesBtn.classList.add('w3-hide');
+            articlesBtn.classList.remove('w3-show');
+        }
+    }
+})
 
 
 // Show more button...
+const moreArticlesBtn = document.getElementById('more-articles-btn');
 
-$(function() {
-    let btn = $('#more-articles-btn');
-    if (btn.attr('more-read') === 'True') {
-        btn.addClass('w3-show');
-        btn.removeClass('w3-hide')
-    } else if (btn.attr('more-unread') === 'True' && _state.showRead) {
-        btn.addClass('w3-show');
-        btn.removeClass('w3-hide')
+// Set initial visibility
+if (moreArticlesBtn.dataset.moreRead === 'True') {
+    moreArticlesBtn.classList.add('w3-show');
+    moreArticlesBtn.classList.remove('w3-hide');
+} else if (moreArticlesBtn.dataset.moreUnread === 'True' && _state.showRead) {
+    moreArticlesBtn.classList.add('w3-show');
+    moreArticlesBtn.classList.remove('w3-hide');
+} else {
+    moreArticlesBtn.classList.add('w3-hide');
+    moreArticlesBtn.classList.remove('w3-show');
+}
+
+// Handle click
+moreArticlesBtn.addEventListener('click', async (e) => {
+    const startAt = e.target.dataset.articleCount;
+    const feedId = e.target.dataset.feedId || '';
+    const response = await fetch(`${$SCRIPT_ROOT}/_more_articles?feed_id=${feedId}&start_at=${startAt}`);
+    const text = await response.text();
+    const replaceTarget = document.getElementById('more-articles-target');
+    replaceTarget.outerHTML = text;
+    // New articles will be hidden by default; set visibility based on current state
+    const readArticles = document.querySelectorAll('article.read');
+    if (_state.showRead) {
+        for (let readArticle of readArticles) {
+            readArticle.classList.remove('w3-hide');
+        }
     } else {
-        btn.addClass('w3-hide');
-        btn.removeClass('w3-show');
+        for (let readArticle of readArticles) {
+            readArticle.classList.add('w3-hide');
+        }
+        e.target.innerText = 'Show Read';
     }
-
-})
-
-$(function () {
-    $('#more-articles-btn').on('click', function() {
-        let startAt = $(this).attr('article-count');
-        let feedId = $(this).attr('feed-id');
-        $.get($SCRIPT_ROOT + '/_more_articles', {
-            feed_id: feedId || '',
-            start_at: startAt
-        }, function (response) {
-            $('#more-articles-target').replaceWith(response);
-            // New articles will be hidden by default; set visibility 
-            // based on current showRead state
-            if (_state.showRead) {
-                $("article.read").removeClass("w3-hide");
-            }
-            else {
-                $("article.read").addClass("w3-hide");
-                $(this).text("Show Read");
-            }
-        });
-    });
 })
 
 // Article preview modal
-$(function () {
-    $('.article-preview').on('click', function() {
-        let articleId = $(this).attr('data-id');
-            $.get($SCRIPT_ROOT + '/_article_contents', {
-            id: articleId
-        }, function(response) {
-            $('#article-content-target').html(response.article_contents);
-            $('#article-content-modal').removeClass('w3-hide').addClass('w3-show');
-        })
+const articlePreviewLinks = document.querySelectorAll('.article-preview');
+for (let link of articlePreviewLinks) {
+    link.addEventListener('click', async (e) => {
+        const articleId = e.currentTarget.dataset.id;
+        const response = await fetch(`${$SCRIPT_ROOT}/_article_contents?id=${articleId}`);
+        const json = await response.json();
+        const contentTarget = document.getElementById('article-content-target');
+        const contentModal = document.getElementById('article-content-modal');
+        contentTarget.innerHTML = json.article_contents;
+        contentModal.classList.remove('w3-hide');
+        contentModal.classList.add('w3-show');
     })
+}
+
+const modalCloseBtn = document.getElementById('close-article-content-modal');
+modalCloseBtn.addEventListener('click', (e) => {
+    const contentTarget = document.getElementById('article-content-target');
+    const contentModal = document.getElementById('article-content-modal');
+    contentModal.classList.add('w3-hide');
+    contentModal.classList.remove('w3-show');
+    contentTarget.innerHTML = '';
 })

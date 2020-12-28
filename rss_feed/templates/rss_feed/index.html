@@ -54,7 +54,7 @@
 <div class="w3-margin-bottom"></div>
 {% endif %}
 {% for item in items %}
-<article class="w3-round w3-card w3-margin-bottom w3-leftbar item {% if item.UserItem.read %}w3-border-pale-blue read w3-hide{% else %}w3-border-light-blue unread{% endif %}" id="{{ item.Item.id }}">
+<article class="w3-round w3-card w3-margin-bottom w3-leftbar item {% if item.UserItem.read %}w3-border-pale-blue read w3-hide{% else %}w3-border-light-blue unread{% endif %}" id="{{ item.Item.id }}" style="transition: opacity 200ms;">
     <div class="w3-container">
         <header>
             {% if item.UserItem.bookmark %}
@@ -100,11 +100,11 @@
 <span id="more-articles-target">
     <button 
         id="more-articles-btn" 
-        article-count="{{ (items | length) + 1 }}" 
-        {% if feed_name %}feed-id="{{ feed_id }}"{% endif %} 
+        data-article-count="{{ (items | length) + 1 }}" 
+        {% if feed_name %}data-feed-id="{{ feed_id }}"{% endif %} 
         class="w3-btn w3-round w3-light-grey btn-dark w3-block"
-        more-read="{{more_read}}"
-        more-unread="{{more_unread}}"
+        data-more-read="{{more_read}}"
+        data-more-unread="{{more_unread}}"
     >
         Load More Articles
     </button>
