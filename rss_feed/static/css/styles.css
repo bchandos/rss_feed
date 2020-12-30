@@ -26,3 +26,63 @@
         background-color: #9e9e9e;
     }
 }
+
+/* Indeterminite horizontal loader - Material Design */
+
+#loader-bg {
+    position: relative;
+    height: 6px;
+    width: 100%;
+    background-color: #ADD8E6;
+    overflow: hidden;
+}
+
+#loader-animation-slow {
+    position: absolute;
+    height: 6px;
+    width: 33%;
+    top: 0;
+    left: 67%;
+    background-color: #00008B;
+    animation-name: loader-animation-slow;
+    animation-duration: 1.75s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+#loader-animation-fast {
+    position: absolute;
+    height: 6px;
+    width: 33%;
+    top: 0;
+    left: 67%;
+    background-color: #00008B;
+    animation-name: loader-animation-fast;
+    animation-duration: 1.75s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+@keyframes loader-animation-slow {
+    0% {width: 0%; left: 0%;}
+    10% {width: 20%; left: 0%;}
+    20% {width: 50%; left: 2%;}
+    30% {width: 67%; left: 16%;}
+    40% {width: 67%; left: 33%;}
+    50% {width: 33%; left: 67%;}
+    60% {width: 0%; left: 100%;}
+    100% {width: 0%; left: 0%;}
+}
+
+@keyframes loader-animation-fast {
+    0% {width: 0%; left: 0%;}
+    50% {width: 0%; left: 0%;}
+    60% {width: 50%; left: 0%;}
+    65% {width: 67%; left: 6%;}
+    70% {width: 40%; left: 40%;}
+    75% {width: 30%; left: 70%;}
+    80% {width: 10%; left: 90%;}
+    85% {width: 2%; left: 98%;}
+    90% {width: 0%; left: 100%;}
+    100% {width: 0%; left: 0%;}
+}

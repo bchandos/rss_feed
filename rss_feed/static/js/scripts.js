@@ -170,3 +170,18 @@ modalCloseBtn.addEventListener('click', (e) => {
     contentModal.classList.remove('w3-show');
     contentTarget.innerHTML = '';
 })
+
+// Add a loader bar at the top of the screen so when in 
+// PWA mode, there is some user feedback that something is happening
+window.addEventListener('beforeunload', (e) => {
+    const loaderBgDiv = document.createElement('div');
+    loaderBgDiv.id = 'loader-bg';
+    const loaderSlowDiv = document.createElement('div');
+    loaderSlowDiv.id = 'loader-animation-slow';
+    const loaderFastDiv = document.createElement('div');
+    loaderFastDiv.id = 'loader-animation-fast';
+    loaderBgDiv.appendChild(loaderSlowDiv);
+    loaderBgDiv.appendChild(loaderFastDiv);
+    const firstChild = document.body.firstElementChild;
+    document.body.insertBefore(loaderBgDiv, firstChild);
+})
