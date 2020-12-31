@@ -30,7 +30,8 @@
 /* Indeterminite horizontal loader - Material Design */
 
 #loader-bg {
-    position: relative;
+    position: fixed;
+    top: 0;
     height: 6px;
     width: 100%;
     background-color: #ADD8E6;

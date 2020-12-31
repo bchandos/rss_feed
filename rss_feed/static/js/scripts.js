@@ -2,6 +2,26 @@ let _state = {
     showRead: false,
 };
 
+const showLoader = (e) => {
+    const loaderBgDiv = document.createElement('div');
+    loaderBgDiv.id = 'loader-bg';
+    const loaderSlowDiv = document.createElement('div');
+    loaderSlowDiv.id = 'loader-animation-slow';
+    const loaderFastDiv = document.createElement('div');
+    loaderFastDiv.id = 'loader-animation-fast';
+    loaderBgDiv.appendChild(loaderSlowDiv);
+    loaderBgDiv.appendChild(loaderFastDiv);
+    const firstChild = document.body.firstElementChild;
+    document.body.insertBefore(loaderBgDiv, firstChild);
+}
+
+const hideLoader = (e) => {
+    const loaderBgDiv = document.getElementById('loader-bg');
+    if (loaderBgDiv) {
+        loaderBgDiv.remove();
+    }
+}
+
 
 // Delete feed
 const deleteFeedBtn = document.getElementById('delete-feed-button');
@@ -21,6 +41,7 @@ if (deleteFeedBtn) {
 const markers = document.querySelectorAll('.marker');
 for (let marker of markers) {
     marker.addEventListener('click', async (e) => {
+        showLoader();
         let label;
         const target = e.target;
         const response = await fetch(`${$SCRIPT_ROOT}/_mark_read`, {
@@ -51,6 +72,7 @@ for (let marker of markers) {
             label = 'Mark Read';
         }
         target.innerText = label;
+        hideLoader();
     });
 }
 
@@ -127,6 +149,7 @@ if (moreArticlesBtn.dataset.moreRead === 'True') {
 
 // Handle click
 moreArticlesBtn.addEventListener('click', async (e) => {
+    showLoader();
     const startAt = e.target.dataset.articleCount;
     const feedId = e.target.dataset.feedId || '';
     const response = await fetch(`${$SCRIPT_ROOT}/_more_articles?feed_id=${feedId}&start_at=${startAt}`);
@@ -145,12 +168,14 @@ moreArticlesBtn.addEventListener('click', async (e) => {
         }
         e.target.innerText = 'Show Read';
     }
+    hideLoader();
 })
 
 // Article preview modal
 const articlePreviewLinks = document.querySelectorAll('.article-preview');
 for (let link of articlePreviewLinks) {
     link.addEventListener('click', async (e) => {
+        showLoader();
         const articleId = e.currentTarget.dataset.id;
         const response = await fetch(`${$SCRIPT_ROOT}/_article_contents?id=${articleId}`);
         const json = await response.json();
@@ -159,6 +184,7 @@ for (let link of articlePreviewLinks) {
         contentTarget.innerHTML = json.article_contents;
         contentModal.classList.remove('w3-hide');
         contentModal.classList.add('w3-show');
+        hideLoader();
     })
 }
 
@@ -173,15 +199,6 @@ modalCloseBtn.addEventListener('click', (e) => {
 
 // Add a loader bar at the top of the screen so when in 
 // PWA mode, there is some user feedback that something is happening
-window.addEventListener('beforeunload', (e) => {
-    const loaderBgDiv = document.createElement('div');
-    loaderBgDiv.id = 'loader-bg';
-    const loaderSlowDiv = document.createElement('div');
-    loaderSlowDiv.id = 'loader-animation-slow';
-    const loaderFastDiv = document.createElement('div');
-    loaderFastDiv.id = 'loader-animation-fast';
-    loaderBgDiv.appendChild(loaderSlowDiv);
-    loaderBgDiv.appendChild(loaderFastDiv);
-    const firstChild = document.body.firstElementChild;
-    document.body.insertBefore(loaderBgDiv, firstChild);
-})
+window.addEventListener('beforeunload', showLoader)
+
+
