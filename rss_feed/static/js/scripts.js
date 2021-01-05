@@ -3,6 +3,16 @@ let _state = {
 };
 
 const showLoader = (e) => {
+    if (e.currentTarget && !(e.currentTarget instanceof Window)) {
+        e.currentTarget.classList.add('w3-disabled');
+        if (e.currentTarget instanceof HTMLAnchorElement) {
+            const url = e.currentTarget.getAttribute('href');
+            if (url) {
+                e.currentTarget.removeAttribute('href');
+                e.currentTarget.dataset.originalUrl = url;
+            }
+        }
+    }
     const loaderBgDiv = document.createElement('div');
     loaderBgDiv.id = 'loader-bg';
     const loaderSlowDiv = document.createElement('div');
@@ -16,6 +26,16 @@ const showLoader = (e) => {
 }
 
 const hideLoader = (e) => {
+    if (e.target) {
+        // re-enable the target
+        e.target.classList.remove('w3-disabled');
+        if (e.target instanceof HTMLAnchorElement) {
+            const url = e.target.dataset.originalUrl;
+            if (url) {
+                e.target.setAttribute('href', url);
+            }
+        }
+    }
     const loaderBgDiv = document.getElementById('loader-bg');
     if (loaderBgDiv) {
         loaderBgDiv.remove();
@@ -41,7 +61,7 @@ if (deleteFeedBtn) {
 const markers = document.querySelectorAll('.marker');
 for (let marker of markers) {
     marker.addEventListener('click', async (e) => {
-        showLoader();
+        showLoader(e);
         let label;
         const target = e.target;
         const response = await fetch(`${$SCRIPT_ROOT}/_mark_read`, {
@@ -72,7 +92,7 @@ for (let marker of markers) {
             label = 'Mark Read';
         }
         target.innerText = label;
-        hideLoader();
+        hideLoader(e);
     });
 }
 
@@ -149,7 +169,7 @@ if (moreArticlesBtn.dataset.moreRead === 'True') {
 
 // Handle click
 moreArticlesBtn.addEventListener('click', async (e) => {
-    showLoader();
+    showLoader(e);
     const startAt = e.target.dataset.articleCount;
     const feedId = e.target.dataset.feedId || '';
     const response = await fetch(`${$SCRIPT_ROOT}/_more_articles?feed_id=${feedId}&start_at=${startAt}`);
@@ -168,14 +188,14 @@ moreArticlesBtn.addEventListener('click', async (e) => {
         }
         e.target.innerText = 'Show Read';
     }
-    hideLoader();
+    hideLoader(e);
 })
 
 // Article preview modal
 const articlePreviewLinks = document.querySelectorAll('.article-preview');
 for (let link of articlePreviewLinks) {
     link.addEventListener('click', async (e) => {
-        showLoader();
+        showLoader(e);
         const articleId = e.currentTarget.dataset.id;
         const response = await fetch(`${$SCRIPT_ROOT}/_article_contents?id=${articleId}`);
         const json = await response.json();
@@ -184,7 +204,7 @@ for (let link of articlePreviewLinks) {
         contentTarget.innerHTML = json.article_contents;
         contentModal.classList.remove('w3-hide');
         contentModal.classList.add('w3-show');
-        hideLoader();
+        hideLoader(e);
     })
 }
 
