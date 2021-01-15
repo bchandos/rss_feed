@@ -1,5 +1,7 @@
 {
     "name": "RSS Feed Reader",
+    "version": "0.1",
+    "lang": "en-US",
     "short_name": "RSS Feed",
     "description": "RSS feed aggregator.",
     "start_url": "/",
@@ -8,8 +10,8 @@
     "display": "standalone",
     "icons": [
         {
-            "src": "/static/icons/rss-feed-icon.svg",
-            "sizes": "32x32 64x64 128x128 256x256 512x512"
+            "src": "/icons/rss-feed-icon.svg",
+            "sizes": "32x32 48x48 64x64 128x128 256x256 512x512"
         }
     ]
 }
