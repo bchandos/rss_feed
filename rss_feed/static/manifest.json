@@ -10,8 +10,8 @@
     "display": "standalone",
     "icons": [
         {
-            "src": "https://feed-rdr.herokuapp.com/static/icons/rss-feed-icon.svg",
-            "sizes": "32x32"
+            "src": "icons/rss-feed-icon.svg",
+            "sizes": "150x150"
         }
     ]
 }
