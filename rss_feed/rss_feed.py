@@ -351,7 +351,7 @@ def delete_items(user_id, feed_id):
             db.session.delete(user_item)
             if len(item.user_items) <= 1:
                 db.session.delete(item)
-            print('I have deleted an item!')
+            print('I have deleted an item!', user_item.id)
     db.session.commit()
 
 def expire_items(user_id, feed_id):
