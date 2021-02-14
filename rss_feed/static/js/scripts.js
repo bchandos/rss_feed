@@ -44,17 +44,20 @@ const hideLoader = (e) => {
 
 
 // Delete feed
-const deleteFeedBtn = document.getElementById('delete-feed-button');
-if (deleteFeedBtn) {
-    deleteFeedBtn.addEventListener('click', (e) => {
-        const feedId = e.target.dataset.feedId;
-        const deleteWarningModal = document.getElementById('delete-warning-modal');
-        const scaryDeleteBtn = document.getElementById('bigScaryDeleteButton');
-        deleteWarningModal.style.display = 'block';
-        scaryDeleteBtn.addEventListener('click', (e) => {
-            window.location.href = `${$SCRIPT_ROOT}/${feedId}/delete`; 
+const _deleteFeedBtn = document.getElementById('delete-feed-button');
+const deleteFeedBtns = [_deleteFeedBtn, ...document.getElementsByClassName('delete-feed-button')];
+for (const deleteFeedBtn of deleteFeedBtns) {
+    if (deleteFeedBtn) {
+        deleteFeedBtn.addEventListener('click', (e) => {
+            const feedId = e.target.dataset.feedId;
+            const deleteWarningModal = document.getElementById('delete-warning-modal');
+            const scaryDeleteBtn = document.getElementById('bigScaryDeleteButton');
+            deleteWarningModal.style.display = 'block';
+            scaryDeleteBtn.addEventListener('click', (e) => {
+                window.location.href = `${$SCRIPT_ROOT}/${feedId}/delete`; 
+            })
         })
-    })
+    }
 }
 
 // Mark Read
@@ -124,72 +127,76 @@ for (let bookmark of bookmarks) {
 
 // Show / hide
 const showReadBtn = document.getElementById('show_read');
-showReadBtn.addEventListener('click', (e) => {
-    _state.showRead = !_state.showRead;
-    const articlesBtn = document.getElementById('more-articles-btn');
-    if (_state.showRead) {
-        const readArticles = document.querySelectorAll('article.read');
-        for (let readArticle of readArticles) {
-            readArticle.style.opacity = 1;
-            readArticle.classList.remove('w3-hide');
+if (showReadBtn) {
+    showReadBtn.addEventListener('click', (e) => {
+        _state.showRead = !_state.showRead;
+        const articlesBtn = document.getElementById('more-articles-btn');
+        if (_state.showRead) {
+            const readArticles = document.querySelectorAll('article.read');
+            for (let readArticle of readArticles) {
+                readArticle.style.opacity = 1;
+                readArticle.classList.remove('w3-hide');
+            }
+            e.target.innerText = 'Hide Read';
+            if (articlesBtn.dataset.moreUnread === 'True') {
+                articlesBtn.classList.add('w3-show');
+                articlesBtn.classList.remove('w3-hide');
+            }
+        } else {
+            const readArticles = document.querySelectorAll('article.read');
+            for (let readArticle of readArticles) {
+                readArticle.classList.add('w3-hide');
+            }
+            e.target.innerText = 'Show Read';
+            if (articlesBtn.dataset.moreUnread === 'True' && articlesBtn.dataset.moreRead === 'False') {
+                articlesBtn.classList.add('w3-hide');
+                articlesBtn.classList.remove('w3-show');
+            }
         }
-        e.target.innerText = 'Hide Read';
-        if (articlesBtn.dataset.moreUnread === 'True') {
-            articlesBtn.classList.add('w3-show');
-            articlesBtn.classList.remove('w3-hide');
-        }
-    } else {
-        const readArticles = document.querySelectorAll('article.read');
-        for (let readArticle of readArticles) {
-            readArticle.classList.add('w3-hide');
-        }
-        e.target.innerText = 'Show Read';
-        if (articlesBtn.dataset.moreUnread === 'True' && articlesBtn.dataset.moreRead === 'False') {
-            articlesBtn.classList.add('w3-hide');
-            articlesBtn.classList.remove('w3-show');
-        }
-    }
-})
+    })
+}
 
 
 // Show more button...
 const moreArticlesBtn = document.getElementById('more-articles-btn');
 
-// Set initial visibility
-if (moreArticlesBtn.dataset.moreRead === 'True') {
-    moreArticlesBtn.classList.add('w3-show');
-    moreArticlesBtn.classList.remove('w3-hide');
-} else if (moreArticlesBtn.dataset.moreUnread === 'True' && _state.showRead) {
-    moreArticlesBtn.classList.add('w3-show');
-    moreArticlesBtn.classList.remove('w3-hide');
-} else {
-    moreArticlesBtn.classList.add('w3-hide');
-    moreArticlesBtn.classList.remove('w3-show');
+if (moreArticlesBtn) {
+    // Set initial visibility
+    if (moreArticlesBtn.dataset.moreRead === 'True') {
+        moreArticlesBtn.classList.add('w3-show');
+        moreArticlesBtn.classList.remove('w3-hide');
+    } else if (moreArticlesBtn.dataset.moreUnread === 'True' && _state.showRead) {
+        moreArticlesBtn.classList.add('w3-show');
+        moreArticlesBtn.classList.remove('w3-hide');
+    } else {
+        moreArticlesBtn.classList.add('w3-hide');
+        moreArticlesBtn.classList.remove('w3-show');
+    }
+    // Handle click
+    moreArticlesBtn.addEventListener('click', async (e) => {
+        showLoader(e);
+        const startAt = e.target.dataset.articleCount;
+        const feedId = e.target.dataset.feedId || '';
+        const response = await fetch(`${$SCRIPT_ROOT}/_more_articles?feed_id=${feedId}&start_at=${startAt}`);
+        const text = await response.text();
+        const replaceTarget = document.getElementById('more-articles-target');
+        replaceTarget.outerHTML = text;
+        // New articles will be hidden by default; set visibility based on current state
+        const readArticles = document.querySelectorAll('article.read');
+        if (_state.showRead) {
+            for (let readArticle of readArticles) {
+                readArticle.classList.remove('w3-hide');
+            }
+        } else {
+            for (let readArticle of readArticles) {
+                readArticle.classList.add('w3-hide');
+            }
+            e.target.innerText = 'Show Read';
+        }
+        hideLoader(e);
+    })
 }
 
-// Handle click
-moreArticlesBtn.addEventListener('click', async (e) => {
-    showLoader(e);
-    const startAt = e.target.dataset.articleCount;
-    const feedId = e.target.dataset.feedId || '';
-    const response = await fetch(`${$SCRIPT_ROOT}/_more_articles?feed_id=${feedId}&start_at=${startAt}`);
-    const text = await response.text();
-    const replaceTarget = document.getElementById('more-articles-target');
-    replaceTarget.outerHTML = text;
-    // New articles will be hidden by default; set visibility based on current state
-    const readArticles = document.querySelectorAll('article.read');
-    if (_state.showRead) {
-        for (let readArticle of readArticles) {
-            readArticle.classList.remove('w3-hide');
-        }
-    } else {
-        for (let readArticle of readArticles) {
-            readArticle.classList.add('w3-hide');
-        }
-        e.target.innerText = 'Show Read';
-    }
-    hideLoader(e);
-})
 
 // Article preview modal
 const articlePreviewLinks = document.querySelectorAll('.article-preview');
