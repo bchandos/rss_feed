@@ -2,7 +2,7 @@
 
 import xml.etree.ElementTree as ET
 from urllib.parse import urlparse, urlunparse
-from urllib.request import urlopen
+from urllib.request import urlopen, Request
 from urllib.error import URLError, HTTPError
 from datetime import datetime, timedelta
 import time
@@ -179,13 +179,18 @@ def add_feed():
             existing_feed = Feed.query.filter(Feed.url==u.geturl()).first()
             if not existing_feed:
                 try:
-                    with urlopen(u.geturl()) as f:
+                    req = Request(
+                        u.geturl(),
+                        headers={'User-Agent': 'Mozilla/5.0'}
+                    )
+                    with urlopen(req) as f:
                         if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
                             root = ET.fromstring(f.read())
                             feed_name = root[0].find('title').text
                         else:
                             abort(404, f'Invalid feed URL ({feed_url}). Code {f.getcode()}.')
                 except (URLError, HTTPError) as err:
+                    print(err)
                     abort(404, f'URL ({feed_url}) could not be opened. Error: {err}.')
 
                 new_feed = Feed(url=u.geturl(), name=feed_name)
@@ -294,7 +299,11 @@ def get_items(feed_id):
 
 def download_items(url, feed_id, user_id):
     try:
-        f = urlopen(url)
+        req = Request(
+            url,
+            headers={'User-Agent': 'Mozilla/5.0'}
+        )
+        f = urlopen(req)
     except:
         return
     else:
