@@ -103,7 +103,7 @@ for (let marker of markers) {
 const bookmarks = document.querySelectorAll('.bookmark');
 for (let bookmark of bookmarks) {
     bookmark.addEventListener('click', async (e) => {
-        const target = e.target;
+        const target = e.currentTarget;
         const response = await fetch(`${$SCRIPT_ROOT}/_bookmark`, {
             method: 'POST',
             headers: {
