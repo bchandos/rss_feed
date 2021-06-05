@@ -4,18 +4,28 @@
 <h2>{% block title %}News Feed Items{% endblock %}</h2>
 <div class="w3-section">
     {% if g.user %}
-    <a class="w3-margin-right" href="{{ url_for('rss_feed.add_feed') }}">
-        <i class="material-icons">add</i><span class="w3-hide-small">Add New Feed</span></a>
+    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.add_feed') }}">
+        <i class="material-icons btn-icon">add</i>
+        <span class="w3-hide-small w3-hide-medium">Add New Feed</span>
+    </a>
     {% if feed_name %}
-    <a class="w3-margin-right" href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}">
-        <i class="material-icons">refresh</i><span class="w3-hide-small">Refresh Feed</span></a>
-    <a class="w3-margin-right" href="{{ url_for('rss_feed.mark_read_all', feed_id=feed_id) }}">
-        <i class="material-icons">done_all</i><span class="w3-hide-small">Mark Feed Read</span></a>
+    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}">
+        <i class="material-icons btn-icon">refresh</i>
+        <span class="w3-hide-small w3-hide-medium">Refresh Feed</span>
+    </a>
+    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.mark_read_all', feed_id=feed_id) }}">
+        <i class="material-icons btn-icon">done_all</i>
+        <span class="w3-hide-small w3-hide-medium">Mark Feed Read</span>
+    </a>
     {% else %}
-    <a class="w3-margin-right" href="{{ url_for('rss_feed.get_items') }}">
-        <i class="material-icons">refresh</i><span class="w3-hide-small">Refresh All Feeds</span></a>
-    <a class="w3-margin-right" href="{{ url_for('rss_feed.mark_read_all') }}">
-        <i class="material-icons">done_all</i><span class="w3-hide-small">Mark All Read</span></a>
+    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.get_items') }}">
+        <i class="material-icons btn-icon">refresh</i>
+        <span class="w3-hide-small w3-hide-medium">Refresh All Feeds</span>
+    </a>
+    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.mark_read_all') }}">
+        <i class="material-icons btn-icon">done_all</i>
+        <span class="w3-hide-small w3-hide-medium">Mark All Read</span>
+    </a>
     {% endif %}
     {% endif %}
 </div>

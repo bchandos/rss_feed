@@ -64,6 +64,10 @@
     animation-timing-function: linear;
 }
 
+i.btn-icon {
+    vertical-align: middle;
+}
+
 @keyframes loader-animation-slow {
     0% {width: 0%; left: 0%;}
     10% {width: 20%; left: 0%;}
