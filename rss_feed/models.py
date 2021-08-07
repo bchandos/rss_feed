@@ -1,6 +1,7 @@
 # pylint: disable=no-member
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import backref
 
 db = SQLAlchemy()
 
@@ -9,6 +10,8 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String)
     password = db.Column(db.String)
+
+    feeds = db.relationship('UserFeed', backref='user')
 
 
 class Feed(db.Model):
@@ -40,6 +43,8 @@ class UserFeed(db.Model):
     user_feed_name = db.Column(db.String)
     auto_expire = db.Column(db.Boolean, default=False)
     preview_articles = db.Column(db.Boolean, default=False)
+
+    Feed = db.relationship('Feed')
 
 class UserItem(db.Model):
     __tablename__ = 'user_item'

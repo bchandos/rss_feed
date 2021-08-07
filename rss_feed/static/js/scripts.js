@@ -224,6 +224,14 @@ modalCloseBtn.addEventListener('click', (e) => {
     contentTarget.innerHTML = '';
 })
 
+// Feed selector
+const feedSelector = document.getElementById('feed-selector');
+feedSelector.addEventListener('change', (e) => {
+    if (e.target.value) {
+        window.location = `/${e.target.value}`;
+    }
+})
+
 // Add a loader bar at the top of the screen so when in 
 // PWA mode, there is some user feedback that something is happening
 window.addEventListener('beforeunload', showLoader)

@@ -25,6 +25,11 @@
     .dark-striped tbody tr:nth-child(2n) {
         background-color: #9e9e9e;
     }
+
+    .w3-select {
+        color:#fff!important;
+        background-color:#616161!important;
+    }
 }
 
 /* Indeterminite horizontal loader - Material Design */
@@ -62,6 +67,15 @@
     animation-duration: 1.75s;
     animation-iteration-count: infinite;
     animation-timing-function: linear;
+}
+
+#feed-tools {
+    display: flex;
+    align-items: center;
+}
+
+#feed-tools > * {
+    margin: 0 4px;
 }
 
 i.btn-icon {

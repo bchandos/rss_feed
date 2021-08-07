@@ -51,7 +51,7 @@
     {% endif %}
 </div>
 {% if feed_name %}
-<div class="w3-container w3-margin-bottom">
+<div class="w3-container w3-margin-bottom w3-margin-top" id="feed-tools">
     <a href="{{ url_for('rss_feed.index') }}"><i class="material-icons">home</i></a>
     <span> > </span>
     <a href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}">{{ feed_name }}</a>
@@ -61,7 +61,16 @@
     </a>
 </div>
 {% else %}
-<div class="w3-margin-bottom"></div>
+<div class="w3-container w3-margin-bottom w3-margin-top">
+    <select class="w3-select" id="feed-selector">
+        <option selected></option>
+        {% for feed in g.user.feeds %}
+            <option value="{{feed.Feed.id}}">
+                {{feed.Feed.name}}
+            </option>
+        {% endfor %}
+    </select>
+</div>
 {% endif %}
 {% for item in items %}
 <article class="w3-round w3-card w3-margin-bottom w3-leftbar item {% if item.UserItem.read %}w3-border-pale-blue read w3-hide{% else %}w3-border-light-blue unread{% endif %}" id="{{ item.Item.id }}" style="transition: opacity 200ms;">
