@@ -459,10 +459,12 @@ def mark_read_all(feed_id):
         db.session.commit()
         return redirect(url_for('rss_feed.index'))
     else:
-
-        all_items = UserItem.query.filter(Item.feed_id==feed_id, UserItem.user_id==user_id)
+        all_items = db.session.query(UserItem, Item).join(Item).filter(
+            Item.feed_id==feed_id, 
+            UserItem.user_id==user_id
+        )
         for item in all_items:
-            item.read = True
+            item.UserItem.read = True
         db.session.commit()
         return redirect(url_for('rss_feed.feed_index', feed_id=feed_id))
 
