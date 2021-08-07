@@ -310,7 +310,10 @@ def download_items(url, feed_id, user_id):
         with f:
             if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
                 xml_file = ET.fromstring(f.read())
-                ns = {'content': 'http://purl.org/rss/1.0/modules/content/'}
+                ns = {
+                    'content': 'http://purl.org/rss/1.0/modules/content/',
+                    'media': 'http://search.yahoo.com/mrss/',
+                }
                 for item in xml_file[0].findall('item'):
                     title = item.find('title').text
                     link = item.find('link').text
@@ -327,11 +330,28 @@ def download_items(url, feed_id, user_id):
                         content = item.find('content:encoded', ns).text
                     else:
                         content = None
+                    
+                    if item.find('media:content', ns) is not None:
+                        media_content = item.find('media:content', ns).get('url')
+                    elif item.find('image') is not None:
+                        media_content = item.find('image').text
+                    else:
+                        media_content = None
+                    
                     guid = item.find('guid').text
                     item_exists = Item.query.filter(Item.guid==guid).first()
                     if not item_exists:
                         # Only create item if it doesn't exist
-                        new_item = Item(feed_id=feed_id, title=title, link=link, description=description, publication_date=publication_date, guid=guid, content=content)
+                        new_item = Item(
+                            feed_id=feed_id, 
+                            title=title, 
+                            link=link, 
+                            description=description, 
+                            publication_date=publication_date, 
+                            guid=guid, 
+                            content=content,
+                            media_content=media_content
+                        )
                         db.session.add(new_item)
                         db.session.commit()
                         new_ui = UserItem(user_id=user_id, item_id=new_item.id)

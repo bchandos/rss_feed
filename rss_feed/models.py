@@ -28,6 +28,7 @@ class Item(db.Model):
     description = db.Column(db.String)
     content = db.Column(db.Text)
     publication_date = db.Column(db.String)
+    media_content = db.Column(db.String)
     guid = db.Column(db.String, unique=True)
 
     user_items = db.relationship('UserItem', backref='item')

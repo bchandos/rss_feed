@@ -68,6 +68,27 @@ i.btn-icon {
     vertical-align: middle;
 }
 
+h3.bg-image {
+    padding-top: 5em;
+    padding-left: 0.25em;
+    background-size: cover;
+    background-position-y: 33%;
+    box-shadow: inset -2px -2px 5px 0px white, 
+                inset 2px 2px 5px 0px white;
+}
+
+h3.bg-image > span {
+    background-color: rgba(97, 97, 97, 0.7);
+    padding: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+    h3.bg-image {
+        box-shadow: inset -2px -2px 5px 0px #616161, 
+                    inset 2px 2px 5px 0px #616161;
+    }
+}
+
 @keyframes loader-animation-slow {
     0% {width: 0%; left: 0%;}
     10% {width: 20%; left: 0%;}

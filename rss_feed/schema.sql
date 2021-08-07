@@ -23,6 +23,7 @@ CREATE TABLE items(
     link TEXT NOT NULL,
     description TEXT,
     publication_date TEXT, 
+    media_content TEXT,
     guid TEXT UNIQUE, 
     FOREIGN KEY (feed_id) REFERENCES feeds (id)
 );
