@@ -66,7 +66,7 @@
         <option selected></option>
         {% for feed in g.user.feeds %}
             <option value="{{feed.Feed.id}}">
-                {{feed.Feed.name}}
+                {{feed.user_feed_name or feed.Feed.name}}
             </option>
         {% endfor %}
     </select>
@@ -88,8 +88,8 @@
             {% if item.UserFeed.preview_articles %}
                 <a class="article-preview" data-id="{{ item.Item.id }}" style="cursor: pointer; text-decoration: underline;">
                     {% if item.Item.media_content %}
-                        <h3 style="background-image: url('{{ item.Item.media_content }}')">
-                            {{ item.Item.title }}
+                        <h3 class="bg-image" style="background-image: url('{{ item.Item.media_content }}')">
+                            <span>{{ item.Item.title }}</span>
                         </h3>
                     {% else %}
                         <h3>{{ item.Item.title }}</h3>

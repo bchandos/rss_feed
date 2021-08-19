@@ -78,6 +78,11 @@
     margin: 0 4px;
 }
 
+#close-article-content-modal {
+    position: sticky;
+    background-color: rgba(97, 97, 97, 0.7);
+}
+
 i.btn-icon {
     vertical-align: middle;
 }
@@ -92,6 +97,7 @@ h3.bg-image {
 }
 
 h3.bg-image > span {
+    color: white;
     background-color: rgba(97, 97, 97, 0.7);
     padding: 3px;
 }
