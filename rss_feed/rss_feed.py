@@ -178,20 +178,8 @@ def add_feed():
             u = urlparse(feed_url, scheme='http')
             existing_feed = Feed.query.filter(Feed.url==u.geturl()).first()
             if not existing_feed:
-                try:
-                    req = Request(
-                        u.geturl(),
-                        headers={'User-Agent': 'Mozilla/5.0'}
-                    )
-                    with urlopen(req) as f:
-                        if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
-                            root = ET.fromstring(f.read())
-                            feed_name = root[0].find('title').text
-                        else:
-                            abort(404, f'Invalid feed URL ({feed_url}). Code {f.getcode()}.')
-                except (URLError, HTTPError) as err:
-                    print(err)
-                    abort(404, f'URL ({feed_url}) could not be opened. Error: {err}.')
+                feed_info = parse_feed_information(u.geturl())
+                feed_name = feed_info['title']
 
                 new_feed = Feed(url=u.geturl(), name=feed_name)
                 db.session.add(new_feed)
@@ -205,7 +193,10 @@ def add_feed():
                 db.session.add(new_uf)
                 db.session.commit()
                 feed_id = existing_feed.id
-            return redirect(url_for('rss_feed.get_items', feed_id=feed_id))
+            if feed_name != '':
+                return redirect(url_for('rss_feed.get_items', feed_id=feed_id))
+            else:
+                return redirect(url_for('rss_feed.edit_feed', id=feed_id))
     return render_template('rss_feed/add_feed.html')
 
 
@@ -298,70 +289,31 @@ def get_items(feed_id):
 
 
 def download_items(url, feed_id, user_id):
-    try:
-        req = Request(
-            url,
-            headers={'User-Agent': 'Mozilla/5.0'}
-        )
-        f = urlopen(req)
-    except:
-        return
-    else:
-        with f:
-            if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
-                xml_file = ET.fromstring(f.read())
-                ns = {
-                    'content': 'http://purl.org/rss/1.0/modules/content/',
-                    'media': 'http://search.yahoo.com/mrss/',
-                }
-                for item in xml_file[0].findall('item'):
-                    title = item.find('title').text
-                    link = item.find('link').text
-                    if item.find('description') is not None:
-                        description = re.sub('<[^<]+?>', '', item.find('description').text)
-                    else:
-                        description = 'No description available.'
-                    if item.find('pubDate') is not None:
-                        publication_date = datetime.timestamp(
-                            parse(item.find('pubDate').text))
-                    else:
-                        publication_date = datetime.timestamp(datetime.today())
-                    if item.find('content:encoded', ns) is not None:
-                        content = item.find('content:encoded', ns).text
-                    else:
-                        content = None
-                    
-                    if item.find('media:content', ns) is not None:
-                        media_content = item.find('media:content', ns).get('url')
-                    elif item.find('image') is not None:
-                        media_content = item.find('image').text
-                    else:
-                        media_content = None
-                    
-                    guid = item.find('guid').text
-                    item_exists = Item.query.filter(Item.guid==guid).first()
-                    if not item_exists:
-                        # Only create item if it doesn't exist
-                        new_item = Item(
-                            feed_id=feed_id, 
-                            title=title, 
-                            link=link, 
-                            description=description, 
-                            publication_date=publication_date, 
-                            guid=guid, 
-                            content=content,
-                            media_content=media_content
-                        )
-                        db.session.add(new_item)
-                        db.session.commit()
-                        new_ui = UserItem(user_id=user_id, item_id=new_item.id)
-                        db.session.add(new_ui)
-                    else:
-                        # Only create user_item if it doesn't exist
-                        if not UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==item_exists.id).first():
-                            new_ui = UserItem(user_id=user_id, item_id=item_exists.id)
-                            db.session.add(new_ui)
-                    db.session.commit()
+    all_items = parse_feed_items(url)
+    for item in all_items:
+        item_exists = Item.query.filter(Item.guid==item['guid']).first()
+        if not item_exists:
+            # Only create item if it doesn't exist
+            new_item = Item(
+                feed_id=feed_id, 
+                title=item['title'], 
+                link=item['link'], 
+                description=item['description'], 
+                publication_date=item['publication_date'], 
+                guid=item['guid'], 
+                content=item['content'],
+                media_content=item['media_content']
+            )
+            db.session.add(new_item)
+            db.session.commit()
+            new_ui = UserItem(user_id=user_id, item_id=new_item.id)
+            db.session.add(new_ui)
+        else:
+            # Only create user_item if it doesn't exist
+            if not UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==item_exists.id).first():
+                new_ui = UserItem(user_id=user_id, item_id=item_exists.id)
+                db.session.add(new_ui)
+        db.session.commit()
 
 
 def delete_items(user_id, feed_id):
@@ -517,3 +469,147 @@ def more_articles():
         more_unread=more_unread,
         new_length=start_at + len(items),
     )
+
+
+def download_feed(feed_url):
+    try:
+        req = Request(
+                feed_url,
+                headers={'User-Agent': 'Mozilla/5.0'}
+            )
+        f = urlopen(req)
+    except:
+        return None
+    
+    with f:
+        if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
+            return ET.fromstring(f.read())
+    
+    return None
+    
+
+
+def parse_feed_information(feed_url):
+    """ Given the feed_url, access the feed and parse the feed
+        information such as title, etc.
+
+        Handles both RSS 2.0 and Atom feed formats.
+    """
+    xml_file = download_feed(feed_url)
+    # print('>>>>', xml_file)
+    if xml_file and xml_file.tag == 'rss':
+        title = xml_file[0].find('title').text
+        return dict(title=title)
+    elif xml_file and xml_file.tag == '{http://www.w3.org/2005/Atom}feed':
+        ns = dict(atom='http://www.w3.org/2005/Atom')
+        title = xml_file.find('atom:title', ns).text
+        return dict(title=title)
+    else:
+        return {}
+
+
+
+def parse_feed_items(feed_url):
+    """ Given the feed_url, access the feed and parse the feed
+        items.
+
+        Handles both RSS 2.0 and Atom feed formats.
+    """
+    xml_file = download_feed(feed_url)
+    # print('>>>>', xml_file)
+    item_list = list()
+    if xml_file and xml_file.tag == 'rss':
+        ns = dict(
+            content='http://purl.org/rss/1.0/modules/content/',
+            media='http://search.yahoo.com/mrss/',
+        )
+        all_items = xml_file[0].findall('item', ns)
+        for item in all_items:
+            
+            title = item.find('title').text
+            
+            link = item.find('link').text
+            
+            guid = item.find('guid').text
+
+            if (d := item.find('description')) is not None:
+                description = d.text
+            else:
+                description = 'No description available.'
+            
+            if (pd := item.find('pubDate')) is not None:
+                publication_date = datetime.timestamp(
+                    parse(pd.text))
+            else:
+                publication_date = datetime.timestamp(datetime.today())
+            
+            if (c := item.find('content:encoded', ns)) is not None:
+                content = c.text
+            else:
+                content = None
+            
+            if (mc := item.find('media:content', ns)) is not None:
+                media_content = mc.get('url')
+            elif (i := item.find('image')) is not None:
+                media_content = i.text
+            else:
+                media_content = None
+            
+            item_list.append(dict(
+                title=title,
+                link=link,
+                description=description,
+                publication_date=publication_date,
+                content=content,
+                media_content=media_content,
+                guid=guid
+            ))
+    elif xml_file and xml_file.tag == '{http://www.w3.org/2005/Atom}feed':
+        ns = dict(atom='http://www.w3.org/2005/Atom')
+        all_items = xml_file.findall('atom:entry', ns)
+        for item in all_items:
+            
+            title = item.find('atom:title', ns).text
+            
+            link = item.find('atom:link', ns).attrib.get('href')
+            
+            guid = item.find('atom:id', ns).text
+            
+            if (d := item.find('atom:summary', ns)) is not None:
+                description = d.text
+            else:
+                description = 'No description available.'
+            
+            if (pd := item.find('atom:updated', ns)) is not None:
+                publication_date = datetime.timestamp(
+                    parse(pd.text))
+            else:
+                publication_date = datetime.timestamp(datetime.today())
+            
+            if (c := item.find('atom:content', ns)) is not None:
+                content = c.text
+            else:
+                content = None
+            
+            media_content = None
+            
+            item_list.append(dict(
+                title=title,
+                link=link,
+                description=description,
+                publication_date=publication_date,
+                content=content,
+                media_content=media_content,
+                guid=guid
+            ))
+    
+    return item_list
+    
+
+        # title
+        # link / link.href
+        # descript / Summary
+        # pubDate / updated
+        # content:encoded / content
+        # media:content || image / None
+        # guid / id
