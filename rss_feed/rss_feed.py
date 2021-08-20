@@ -552,6 +552,10 @@ def parse_feed_items(feed_url):
                 media_content = mc.get('url')
             elif (i := item.find('image')) is not None:
                 media_content = i.text
+            elif '<img' in description:
+                p = re.compile(r'<img[\s\S+]?src=\"(\S+)?\"')
+                if m := p.search(description):
+                    media_content = m.group(1)
             else:
                 media_content = None
             
@@ -591,7 +595,12 @@ def parse_feed_items(feed_url):
             else:
                 content = None
             
-            media_content = None
+            if '<img' in description:
+                p = re.compile(r'<img[\s\S+]?src=\"(\S+)?\"')
+                if m := p.search(description):
+                    media_content = m.group(1)
+            else:
+                media_content = None
             
             item_list.append(dict(
                 title=title,
