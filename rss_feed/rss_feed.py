@@ -556,6 +556,8 @@ def parse_feed_items(feed_url):
                 p = re.compile(r'<img[\s\S+]?src=\"(\S+)?\"')
                 if m := p.search(description):
                     media_content = m.group(1)
+                else:
+                    media_content = None
             else:
                 media_content = None
             
