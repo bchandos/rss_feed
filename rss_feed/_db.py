@@ -1,7 +1,6 @@
 import os
 
-import sqlite3
-import psycopg2
+from psycopg2.extras import RealDictConnection
 
 import click
 from flask import current_app, g
@@ -9,11 +8,7 @@ from flask.cli import with_appcontext
 
 def get_db():
     if 'db' not in g:
-        if os.environ['FLASK_ENV'] == 'development':
-            g.db = sqlite3.connect(current_app.config['DATABASE'], detect_types=sqlite3.PARSE_DECLTYPES)
-            g.db.row_factory = sqlite3.Row
-        else:
-            g.db = psycopg2.connect(current_app.config['DATABASE'])
+        g.db = RealDictConnection(current_app.config['DATABASE'])
     return g.db
 
 def close_db(e=None):

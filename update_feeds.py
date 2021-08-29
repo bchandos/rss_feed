@@ -1,8 +1,6 @@
 from datetime import datetime
 import re
 from urllib.request import urlopen, Request
-import sqlite3
-# import psycopg2
 from psycopg2.extras import RealDictConnection
 import os
 import time
@@ -10,14 +8,14 @@ import xml.etree.ElementTree as ET
 
 from dateutil.parser import parse
 
+db = RealDictConnection(os.environ['DATABASE_URL'])
+
 if os.environ['FLASK_ENV'] == 'development':
-    db_url = os.path.join(os.getcwd(), "instance/rss_feed.db")
-    db = sqlite3.connect(db_url, detect_types=sqlite3.PARSE_DECLTYPES)
-    db.row_factory = sqlite3.Row
-    P = '?'
+    WAIT_MINUTES = 2
+    WAIT_SECONDS = 6
 else:
-    db = RealDictConnection(os.environ['DATABASE_URL'])
-    P = '%s'
+    WAIT_MINUTES = 5
+    WAIT_SECONDS = 60
 
 def download_feed(feed_url):
     try:
@@ -148,19 +146,20 @@ def download_items(url, feed_id):
         cur = db.cursor()
         # Select all users
         cur.execute(
-            f""" SELECT user_id FROM user_feed WHERE user_feed.feed_id={P} """, 
+            """ SELECT user_id FROM user_feed WHERE user_feed.feed_id=%s """, 
             (feed_id,)
         )
         users = [x['user_id'] for x in cur.fetchall()]
         # Check if items exists
-        cur.execute(f""" SELECT id FROM item WHERE item.guid={P} """, (item['guid'],))
+        cur.execute(""" SELECT id FROM item WHERE item.guid=%s """, (item['guid'],))
         item_exists = cur.fetchone()
         if not item_exists:
             # Only create item if it doesn't exist
-            cur.execute(f""" 
+            cur.execute(""" 
                 INSERT INTO item
                 (feed_id, title, link, description, publication_date, guid, content, media_content)
-                VALUES ({P}, {P}, {P}, {P}, {P}, {P}, {P}, {P})
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
             """, (
                 feed_id, 
                 item['title'], 
@@ -171,43 +170,43 @@ def download_items(url, feed_id):
                 item['content'],
                 item['media_content']
             ))
-            new_item_id = cur.lastrowid
             
+            new_item_id = cur.fetchone()['id']
+
             for user_id in users:
-                cur.execute(f""" 
+                cur.execute(""" 
                     INSERT INTO user_item 
                     (user_id, item_id, read, bookmark) 
-                    VALUES ({P}, {P}, {P}, {P})
-                """, (user_id, new_item_id, 0, 0)
+                    VALUES (%s, %s, %s, %s)
+                """, (user_id, new_item_id, False, False)
                 )
             db.commit()
         else:
             # Only create user_item if it doesn't exist
             for user_id in users:
-                cur.execute(f""" 
+                cur.execute(""" 
                     SELECT * FROM user_item 
-                    WHERE user_item.user_id={P}
-                    AND user_item.item_id={P}
+                    WHERE user_item.user_id=%s
+                    AND user_item.item_id=%s
                 """, (
                     user_id,
                     item_exists['id']
                 ))
                 ui_exists = cur.fetchone()
                 if not ui_exists:
-                    cur.execute(f""" 
+                    cur.execute(""" 
                         INSERT INTO user_item
                         (user_id, item_id, read, bookmark)
-                        VALUES ({P}, {P}, {P}, {P})
-                    """, (user_id, item_exists['id'], 0, 0)
+                        VALUES (%s, %s, %s, %s)
+                    """, (user_id, item_exists['id'], False, False)
                     )
                     db.commit()
         db.commit()
 
 while(True):
-    WAIT_MINUTES = 5
     print(f'Feed updating started and waiting {WAIT_MINUTES} minutes...')
     for m in range(WAIT_MINUTES):
-        time.sleep(60)
+        time.sleep(WAIT_SECONDS)
         print(f'Feed updating has waited {m+1} minutes...')
     print('Feed updating has waited, now starting...')
     cur = db.cursor()
