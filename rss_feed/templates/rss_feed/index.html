@@ -9,7 +9,7 @@
         <span class="w3-hide-small w3-hide-medium">Add New Feed</span>
     </a>
     {% if feed_name %}
-    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.get_items', feed_id=feed_id) }}">
+    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}">
         <i class="material-icons btn-icon">refresh</i>
         <span class="w3-hide-small w3-hide-medium">Refresh Feed</span>
     </a>
@@ -18,7 +18,7 @@
         <span class="w3-hide-small w3-hide-medium">Mark Feed Read</span>
     </a>
     {% else %}
-    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.get_items') }}">
+    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.index') }}">
         <i class="material-icons btn-icon">refresh</i>
         <span class="w3-hide-small w3-hide-medium">Refresh All Feeds</span>
     </a>

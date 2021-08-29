@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import re
 from urllib.request import urlopen, Request
 from psycopg2.extras import RealDictConnection
@@ -11,10 +11,10 @@ from dateutil.parser import parse
 db = RealDictConnection(os.environ['DATABASE_URL'])
 
 if os.environ['FLASK_ENV'] == 'development':
-    WAIT_MINUTES = 2
+    WAIT_MINUTES = int(os.environ.get('WAIT_MINUTES', 2))
     WAIT_SECONDS = 6
 else:
-    WAIT_MINUTES = 5
+    WAIT_MINUTES = int(os.environ.get('WAIT_MINUTES', 15))
     WAIT_SECONDS = 60
 
 def download_feed(feed_url):
@@ -203,6 +203,43 @@ def download_items(url, feed_id):
                     db.commit()
         db.commit()
 
+def delete_items(feed_id):
+    # Get rid of old, read, unbookmarked items
+    cur = db.cursor()
+    cur.execute(
+        """ SELECT user_id FROM user_feed WHERE user_feed.feed_id=%s """, 
+        (feed_id,)
+    )
+    users = [x['user_id'] for x in cur.fetchall()]
+    fourteen_days_ago = datetime.now() - timedelta(days=14)
+    delete_date = fourteen_days_ago.timestamp()
+    for user_id in users:
+        cur.execute("""
+            DELETE FROM user_item WHERE (user_id, item_id) IN (
+                SELECT user_id, item_id FROM user_item JOIN item ON (user_item.item_id=item.id)
+                WHERE 
+                user_item.user_id=%s AND
+                user_item.read=%s AND
+                user_item.bookmark=%s AND
+                item.feed_id=%s AND
+                CAST(item.publication_date AS NUMERIC) < %s
+            )
+        """, (
+            user_id, True, False, feed_id, delete_date
+        ))
+    
+    cur.execute("""
+        DELETE FROM item WHERE id IN (
+            SELECT id 
+            FROM item LEFT JOIN user_item ON (user_item.item_id=item.id)
+            WHERE user_item IS NULL
+        )
+    """)
+
+def expire_items(feed_id):
+    pass
+
+
 while(True):
     print(f'Feed updating started and waiting {WAIT_MINUTES} minutes...')
     for m in range(WAIT_MINUTES):
@@ -216,5 +253,7 @@ while(True):
 
     for feed in feed_ids:
         download_items(feed['url'], feed['id'])
+        delete_items(feed['id'])
+        expire_items(feed['id'])
 
     print('Feed updating has finished...')

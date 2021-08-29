@@ -187,10 +187,10 @@ def add_feed():
                 db.session.add(new_uf)
                 db.session.commit()
                 feed_id = existing_feed.id
-            if feed_name != '':
-                return redirect(url_for('rss_feed.get_items', feed_id=feed_id))
-            else:
+            if feed_name == '':
                 return redirect(url_for('rss_feed.edit_feed', id=feed_id))
+            else:
+                return redirect(url_for('rss_feed.index'))
     return render_template('rss_feed/add_feed.html')
 
 
@@ -247,102 +247,40 @@ def delete_feed(id):
     flash(f'Feed {feed_name} deleted.')
     return redirect(request.referrer)
 
+### PORT TO update_feeds.py ###
 
-@bp.route('/update', defaults={'feed_id': None})
-@bp.route('/update/<int:feed_id>')
-@login_required
-def get_items(feed_id):
-    # user_id = g.user.id
-    # if g.user_feed_group:
-    #     if feed_id and feed_id in g.user_feed_group:
-    #         feed = get_feed(feed_id)
-    #         download_items(feed.Feed.url, feed_id, user_id)
-    #         if feed.UserFeed.auto_expire:
-    #             expire_items(user_id, feed_id)
-    #         delete_items(user_id, feed_id)
-    #     elif not feed_id:
-    #         for user_feed_id in g.user_feed_group:
-    #             feed = get_feed(int(user_feed_id))
-    #             download_items(feed.Feed.url, user_feed_id, user_id)
-    #             if feed.UserFeed.auto_expire:
-    #                 expire_items(user_id, user_feed_id)
-    #             delete_items(user_id, user_feed_id)
-    #     else:
-    #         abort(404, "No such feed")
-    # else:
-    #     response = make_response(redirect(url_for('rss_feed.add_feed')))
-    #     response.set_cookie('lastUpdated', str(time.time()), max_age=5000000)
-    #     return response
-    # if feed_id:
-    #     response = make_response(redirect(url_for('rss_feed.feed_index', feed_id=feed_id)))
-    #     response.set_cookie('lastUpdated', str(time.time()), max_age=5000000)
-    #     return response
-    response = make_response(redirect(url_for('rss_feed.index')))
-    response.set_cookie('lastUpdated', str(time.time()), max_age=5000000)
-    return response
-    # return redirect(url_for('rss_feed.index'))
+# def delete_items(user_id, feed_id):
+#     # Get rid of old, read, unbookmarked items
+#     old_items = db.session.query(UserItem, Item).join(Item).filter(
+#         UserItem.user_id==user_id,
+#         UserItem.read==True,
+#         UserItem.bookmark==False,
+#         Item.feed_id==feed_id
+#     )
+#     for item_ in old_items:
+#         user_item = item_.UserItem
+#         item = item_.Item
+#         fourteen_days_ago = datetime.now() - timedelta(days=14)
+#         if float(item.publication_date) < fourteen_days_ago.timestamp():
+#             db.session.delete(user_item)
+#             if len(item.user_items) <= 1:
+#                 db.session.delete(item)
+#     db.session.commit()
 
-
-def download_items(url, feed_id, user_id):
-    all_items = parse_feed_items(url)
-    for item in all_items:
-        item_exists = Item.query.filter(Item.guid==item['guid']).first()
-        if not item_exists:
-            # Only create item if it doesn't exist
-            new_item = Item(
-                feed_id=feed_id, 
-                title=item['title'], 
-                link=item['link'], 
-                description=item['description'], 
-                publication_date=item['publication_date'], 
-                guid=item['guid'], 
-                content=item['content'],
-                media_content=item['media_content']
-            )
-            db.session.add(new_item)
-            db.session.commit()
-            new_ui = UserItem(user_id=user_id, item_id=new_item.id)
-            db.session.add(new_ui)
-        else:
-            # Only create user_item if it doesn't exist
-            if not UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==item_exists.id).first():
-                new_ui = UserItem(user_id=user_id, item_id=item_exists.id)
-                db.session.add(new_ui)
-        db.session.commit()
-
-
-def delete_items(user_id, feed_id):
-    # Get rid of old, read, unbookmarked items
-    old_items = db.session.query(UserItem, Item).join(Item).filter(
-        UserItem.user_id==user_id,
-        UserItem.read==True,
-        UserItem.bookmark==False,
-        Item.feed_id==feed_id
-    )
-    for item_ in old_items:
-        user_item = item_.UserItem
-        item = item_.Item
-        fourteen_days_ago = datetime.now() - timedelta(days=14)
-        if float(item.publication_date) < fourteen_days_ago.timestamp():
-            db.session.delete(user_item)
-            if len(item.user_items) <= 1:
-                db.session.delete(item)
-    db.session.commit()
-
-def expire_items(user_id, feed_id):
-    # Auto mark-read for items older than 2 days
-    old_items = db.session.query(UserItem, Item).join(Item).filter(
-        UserItem.user_id==user_id,
-        UserItem.read==False,
-        Item.feed_id==feed_id
-    )
-    for item_ in old_items:
-        user_item = item_.UserItem
-        item = item_.Item
-        two_days_ago = datetime.now() - timedelta(days=2)
-        if float(item.publication_date) < datetime.timestamp(two_days_ago):
-            user_item.read = True
-    db.session.commit()
+# def expire_items(user_id, feed_id):
+#     # Auto mark-read for items older than 2 days
+#     old_items = db.session.query(UserItem, Item).join(Item).filter(
+#         UserItem.user_id==user_id,
+#         UserItem.read==False,
+#         Item.feed_id==feed_id
+#     )
+#     for item_ in old_items:
+#         user_item = item_.UserItem
+#         item = item_.Item
+#         two_days_ago = datetime.now() - timedelta(days=2)
+#         if float(item.publication_date) < datetime.timestamp(two_days_ago):
+#             user_item.read = True
+#     db.session.commit()
 
 
 @bp.app_template_filter()
@@ -481,7 +419,6 @@ def download_feed(feed_url):
             return ET.fromstring(f.read())
     
     return None
-    
 
 
 def parse_feed_information(feed_url):
@@ -491,7 +428,6 @@ def parse_feed_information(feed_url):
         Handles both RSS 2.0 and Atom feed formats.
     """
     xml_file = download_feed(feed_url)
-    # print('>>>>', xml_file)
     if xml_file and xml_file.tag == 'rss':
         title = xml_file[0].find('title').text
         return dict(title=title)
@@ -501,121 +437,3 @@ def parse_feed_information(feed_url):
         return dict(title=title)
     else:
         return {}
-
-
-
-def parse_feed_items(feed_url):
-    """ Given the feed_url, access the feed and parse the feed
-        items.
-
-        Handles both RSS 2.0 and Atom feed formats.
-    """
-    xml_file = download_feed(feed_url)
-    # print('>>>>', xml_file)
-    item_list = list()
-    if xml_file and xml_file.tag == 'rss':
-        ns = dict(
-            content='http://purl.org/rss/1.0/modules/content/',
-            media='http://search.yahoo.com/mrss/',
-        )
-        all_items = xml_file[0].findall('item', ns)
-        for item in all_items:
-            
-            title = item.find('title').text
-            
-            link = item.find('link').text
-            
-            guid = item.find('guid').text
-
-            if (d := item.find('description')) is not None:
-                description = d.text
-            else:
-                description = 'No description available.'
-            
-            if (pd := item.find('pubDate')) is not None:
-                publication_date = datetime.timestamp(
-                    parse(pd.text))
-            else:
-                publication_date = datetime.timestamp(datetime.today())
-            
-            if (c := item.find('content:encoded', ns)) is not None:
-                content = c.text
-            else:
-                content = None
-            
-            if (mc := item.find('media:content', ns)) is not None:
-                media_content = mc.get('url')
-            elif (i := item.find('image')) is not None:
-                media_content = i.text
-            elif '<img' in description:
-                p = re.compile(r'<img[\s\S+]?src=\"(\S+)?\"')
-                if m := p.search(description):
-                    media_content = m.group(1)
-                else:
-                    media_content = None
-            else:
-                media_content = None
-            
-            item_list.append(dict(
-                title=title,
-                link=link,
-                description=description,
-                publication_date=publication_date,
-                content=content,
-                media_content=media_content,
-                guid=guid
-            ))
-    elif xml_file and xml_file.tag == '{http://www.w3.org/2005/Atom}feed':
-        ns = dict(atom='http://www.w3.org/2005/Atom')
-        all_items = xml_file.findall('atom:entry', ns)
-        for item in all_items:
-            
-            title = item.find('atom:title', ns).text
-            
-            link = item.find('atom:link', ns).attrib.get('href')
-            
-            guid = item.find('atom:id', ns).text
-            
-            if (d := item.find('atom:summary', ns)) is not None:
-                description = d.text
-            else:
-                description = 'No description available.'
-            
-            if (pd := item.find('atom:updated', ns)) is not None:
-                publication_date = datetime.timestamp(
-                    parse(pd.text))
-            else:
-                publication_date = datetime.timestamp(datetime.today())
-            
-            if (c := item.find('atom:content', ns)) is not None:
-                content = c.text
-            else:
-                content = None
-            
-            if '<img' in description:
-                p = re.compile(r'<img[\s\S+]?src=\"(\S+)?\"')
-                if m := p.search(description):
-                    media_content = m.group(1)
-            else:
-                media_content = None
-            
-            item_list.append(dict(
-                title=title,
-                link=link,
-                description=description,
-                publication_date=publication_date,
-                content=content,
-                media_content=media_content,
-                guid=guid
-            ))
-    
-    return item_list
-    
-
-        # title
-        # link / link.href
-        # descript / Summary
-        # pubDate / updated
-        # content:encoded / content
-        # media:content || image / None
-        # guid / id
