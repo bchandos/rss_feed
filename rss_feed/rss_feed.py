@@ -57,9 +57,6 @@ def error_handler(error):
 @bp.route('/')
 @login_required
 def index():
-    last_updated = request.cookies.get('lastUpdated', '0')
-    if time.time() - float(last_updated) > 1800: # 30 minutes
-        return redirect(url_for('rss_feed.get_items'))
     user_id = g.user.id
     sort_param = request.args.get('sort', None)
     if sort_param == 'Ascending':
@@ -89,9 +86,6 @@ def index():
 @bp.route('/<int:feed_id>')
 @login_required
 def feed_index(feed_id):
-    last_updated = request.cookies.get('lastUpdated', '0')
-    if time.time() - float(last_updated) > 1800: # 30 minutes
-        return redirect(url_for('rss_feed.get_items', feed_id=feed_id))
     user_id = g.user.id
     sort_param = request.args.get('sort', None)
     if sort_param == 'Ascending':
@@ -258,34 +252,35 @@ def delete_feed(id):
 @bp.route('/update/<int:feed_id>')
 @login_required
 def get_items(feed_id):
-    user_id = g.user.id
-    if g.user_feed_group:
-        if feed_id and feed_id in g.user_feed_group:
-            feed = get_feed(feed_id)
-            download_items(feed.Feed.url, feed_id, user_id)
-            if feed.UserFeed.auto_expire:
-                expire_items(user_id, feed_id)
-            delete_items(user_id, feed_id)
-        elif not feed_id:
-            for user_feed_id in g.user_feed_group:
-                feed = get_feed(int(user_feed_id))
-                download_items(feed.Feed.url, user_feed_id, user_id)
-                if feed.UserFeed.auto_expire:
-                    expire_items(user_id, user_feed_id)
-                delete_items(user_id, user_feed_id)
-        else:
-            abort(404, "No such feed")
-    else:
-        response = make_response(redirect(url_for('rss_feed.add_feed')))
-        response.set_cookie('lastUpdated', str(time.time()), max_age=5000000)
-        return response
-    if feed_id:
-        response = make_response(redirect(url_for('rss_feed.feed_index', feed_id=feed_id)))
-        response.set_cookie('lastUpdated', str(time.time()), max_age=5000000)
-        return response
+    # user_id = g.user.id
+    # if g.user_feed_group:
+    #     if feed_id and feed_id in g.user_feed_group:
+    #         feed = get_feed(feed_id)
+    #         download_items(feed.Feed.url, feed_id, user_id)
+    #         if feed.UserFeed.auto_expire:
+    #             expire_items(user_id, feed_id)
+    #         delete_items(user_id, feed_id)
+    #     elif not feed_id:
+    #         for user_feed_id in g.user_feed_group:
+    #             feed = get_feed(int(user_feed_id))
+    #             download_items(feed.Feed.url, user_feed_id, user_id)
+    #             if feed.UserFeed.auto_expire:
+    #                 expire_items(user_id, user_feed_id)
+    #             delete_items(user_id, user_feed_id)
+    #     else:
+    #         abort(404, "No such feed")
+    # else:
+    #     response = make_response(redirect(url_for('rss_feed.add_feed')))
+    #     response.set_cookie('lastUpdated', str(time.time()), max_age=5000000)
+    #     return response
+    # if feed_id:
+    #     response = make_response(redirect(url_for('rss_feed.feed_index', feed_id=feed_id)))
+    #     response.set_cookie('lastUpdated', str(time.time()), max_age=5000000)
+    #     return response
     response = make_response(redirect(url_for('rss_feed.index')))
     response.set_cookie('lastUpdated', str(time.time()), max_age=5000000)
     return response
+    # return redirect(url_for('rss_feed.index'))
 
 
 def download_items(url, feed_id, user_id):
