@@ -2,7 +2,8 @@ from datetime import datetime
 import re
 from urllib.request import urlopen, Request
 import sqlite3
-import psycopg2
+# import psycopg2
+from psycopg2.extras import RealDictConnection
 import os
 import time
 import xml.etree.ElementTree as ET
@@ -14,7 +15,7 @@ if os.environ['FLASK_ENV'] == 'development':
     db = sqlite3.connect(db_url, detect_types=sqlite3.PARSE_DECLTYPES)
     db.row_factory = sqlite3.Row
 else:
-    db = psycopg2.connect(os.environ['DATABASE_URL'])
+    db = RealDictConnection(os.environ['DATABASE_URL'])
 
 def download_feed(feed_url):
     try:
@@ -198,7 +199,12 @@ def download_items(url, feed_id):
         db.commit()
 
 while(True):
-    time.sleep(600)
+    WAIT_MINUTES = 5
+    print(f'Feed updating started and waiting {WAIT_MINUTES} minutes...')
+    for m in range(WAIT_MINUTES):
+        time.sleep(60)
+        print(f'Feed updating has waited {m+1} minutes...')
+    print('Feed updating has waited, now starting...')
     cur = db.cursor()
     cur.execute(""" SELECT * From feed """)
     feed_ids = cur.fetchall()
@@ -206,3 +212,5 @@ while(True):
 
     for feed in feed_ids:
         download_items(feed['url'], feed['id'])
+
+    print('Feed updating has finished...')
