@@ -14,8 +14,10 @@ if os.environ['FLASK_ENV'] == 'development':
     db_url = os.path.join(os.getcwd(), "instance/rss_feed.db")
     db = sqlite3.connect(db_url, detect_types=sqlite3.PARSE_DECLTYPES)
     db.row_factory = sqlite3.Row
+    P = '?'
 else:
     db = RealDictConnection(os.environ['DATABASE_URL'])
+    P = '%s'
 
 def download_feed(feed_url):
     try:
@@ -145,17 +147,20 @@ def download_items(url, feed_id):
     for item in all_items:
         cur = db.cursor()
         # Select all users
-        cur.execute(""" SELECT user_id FROM user_feed WHERE user_feed.feed_id=? """, (feed_id,))
+        cur.execute(
+            f""" SELECT user_id FROM user_feed WHERE user_feed.feed_id={P} """, 
+            (feed_id,)
+        )
         users = [x['user_id'] for x in cur.fetchall()]
         # Check if items exists
-        cur.execute(""" SELECT id FROM item WHERE item.guid=? """, (item['guid'],))
+        cur.execute(f""" SELECT id FROM item WHERE item.guid={P} """, (item['guid'],))
         item_exists = cur.fetchone()
         if not item_exists:
             # Only create item if it doesn't exist
-            cur.execute(""" 
+            cur.execute(f""" 
                 INSERT INTO item
                 (feed_id, title, link, description, publication_date, guid, content, media_content)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES ({P}, {P}, {P}, {P}, {P}, {P}, {P}, {P})
             """, (
                 feed_id, 
                 item['title'], 
@@ -169,30 +174,30 @@ def download_items(url, feed_id):
             new_item_id = cur.lastrowid
             
             for user_id in users:
-                cur.execute(""" 
+                cur.execute(f""" 
                     INSERT INTO user_item 
                     (user_id, item_id, read, bookmark) 
-                    VALUES (?, ?, ?, ?)
+                    VALUES ({P}, {P}, {P}, {P})
                 """, (user_id, new_item_id, 0, 0)
                 )
             db.commit()
         else:
             # Only create user_item if it doesn't exist
             for user_id in users:
-                cur.execute(""" 
+                cur.execute(f""" 
                     SELECT * FROM user_item 
-                    WHERE user_item.user_id=?
-                    AND user_item.item_id=?
+                    WHERE user_item.user_id={P}
+                    AND user_item.item_id={P}
                 """, (
                     user_id,
                     item_exists['id']
                 ))
                 ui_exists = cur.fetchone()
                 if not ui_exists:
-                    cur.execute(""" 
+                    cur.execute(f""" 
                         INSERT INTO user_item
                         (user_id, item_id, read, bookmark)
-                        VALUES (?, ?, ?, ?)
+                        VALUES ({P}, {P}, {P}, {P})
                     """, (user_id, item_exists['id'], 0, 0)
                     )
                     db.commit()
