@@ -241,11 +241,7 @@ def expire_items(feed_id):
 
 
 while(True):
-    print(f'Feed updating started and waiting {WAIT_MINUTES} minutes...')
-    for m in range(WAIT_MINUTES):
-        time.sleep(WAIT_SECONDS)
-        print(f'Feed updating has waited {m+1} minutes...')
-    print('Feed updating has waited, now starting...')
+    print('Feed updating has starting...')
     cur = db.cursor()
     cur.execute(""" SELECT * From feed """)
     feed_ids = cur.fetchall()
@@ -255,5 +251,9 @@ while(True):
         download_items(feed['url'], feed['id'])
         delete_items(feed['id'])
         expire_items(feed['id'])
+    print('Feed updating has finished!')
 
-    print('Feed updating has finished...')
+    print(f'Feed updating will wait {WAIT_MINUTES} minutes...')
+    for m in range(WAIT_MINUTES):
+        time.sleep(WAIT_SECONDS)
+        print(f'Feed updating has waited {m+1} minutes...')
