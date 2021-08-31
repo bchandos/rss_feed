@@ -343,10 +343,11 @@ def mark_read_all():
         UserItem.user_id==user_id,
         UserItem.item_id.in_(item_ids)
     ).all()
-    print('>>>>', all_items)
+    
     for i in all_items:
         i.read = True
     db.session.commit()
+    
     return jsonify(status='done')
 
 @bp.route('/__allunread')
