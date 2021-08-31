@@ -99,6 +99,29 @@ for (let marker of markers) {
     });
 }
 
+// Mark All Read
+const markAllRead = async (e) => {
+    // Identify all unread items on the page, and mark them read
+    const unreadElems = document.querySelectorAll('.unread');
+    const unreadIds = Array.from(unreadElems).map(e => parseInt(e.id));
+    if (unreadIds.length) {
+        const response = await fetch(`${$SCRIPT_ROOT}/mark_read_all`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                unreadIds
+            })
+        });
+        const json = await response.json();
+        if (json.status === 'done') {
+            window.location.reload();
+        }
+    }
+}
+document.getElementById('mark-all-read').addEventListener('click', markAllRead);
+
 // Bookmarks
 const bookmarks = document.querySelectorAll('.bookmark');
 for (let bookmark of bookmarks) {
@@ -226,11 +249,13 @@ modalCloseBtn.addEventListener('click', (e) => {
 
 // Feed selector
 const feedSelector = document.getElementById('feed-selector');
-feedSelector.addEventListener('change', (e) => {
-    if (e.target.value) {
-        window.location = `/${e.target.value}`;
-    }
-})
+if (feedSelector) {
+    feedSelector.addEventListener('change', (e) => {
+        if (e.target.value) {
+            window.location = `/${e.target.value}`;
+        }
+    })
+}
 
 // Add a loader bar at the top of the screen so when in 
 // PWA mode, there is some user feedback that something is happening

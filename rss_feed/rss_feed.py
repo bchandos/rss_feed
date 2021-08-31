@@ -333,26 +333,21 @@ def article_contents():
         return jsonify(article_contents=item.content)
 
 
-@bp.route('/mark_read_all', defaults={'feed_id': None})
-@bp.route('/mark_read_all/<int:feed_id>')
+@bp.route('/mark_read_all', methods=('POST',))
 @login_required
-def mark_read_all(feed_id):
+def mark_read_all():
     user_id = g.user.id
-    
-    if not feed_id:
-        UserItem.query.filter(UserItem.user_id==user_id).update({'read': True})
-        db.session.commit()
-        return redirect(url_for('rss_feed.index'))
-    else:
-        all_items = db.session.query(UserItem, Item).join(Item).filter(
-            Item.feed_id==feed_id, 
-            UserItem.user_id==user_id
-        )
-        for item in all_items:
-            item.UserItem.read = True
-        db.session.commit()
-        return redirect(url_for('rss_feed.feed_index', feed_id=feed_id))
-
+    j = request.get_json()
+    item_ids = j.get('unreadIds')
+    all_items = UserItem.query.filter(
+        UserItem.user_id==user_id,
+        UserItem.item_id.in_(item_ids)
+    ).all()
+    print('>>>>', all_items)
+    for i in all_items:
+        i.read = True
+    db.session.commit()
+    return jsonify(status='done')
 
 @bp.route('/__allunread')
 @login_required

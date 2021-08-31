@@ -13,19 +13,19 @@
         <i class="material-icons btn-icon">refresh</i>
         <span class="w3-hide-small w3-hide-medium">Refresh Feed</span>
     </a>
-    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.mark_read_all', feed_id=feed_id) }}">
+    <button class="w3-margin-right w3-button w3-light-blue" id="mark-all-read">
         <i class="material-icons btn-icon">done_all</i>
         <span class="w3-hide-small w3-hide-medium">Mark Feed Read</span>
-    </a>
+    </button>
     {% else %}
     <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.index') }}">
         <i class="material-icons btn-icon">refresh</i>
         <span class="w3-hide-small w3-hide-medium">Refresh All Feeds</span>
     </a>
-    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.mark_read_all') }}">
+    <button class="w3-margin-right w3-button w3-light-blue" id="mark-all-read">
         <i class="material-icons btn-icon">done_all</i>
         <span class="w3-hide-small w3-hide-medium">Mark All Read</span>
-    </a>
+    </button>
     {% endif %}
     {% endif %}
 </div>
