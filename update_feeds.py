@@ -71,12 +71,11 @@ def parse_feed_items(feed_url):
                 content = c.text
             else:
                 content = None
-            
             if (mc := item.find('media:content', ns)) is not None:
                 media_content = mc.get('url')
             elif (i := item.find('image')) is not None:
                 media_content = i.text
-            elif '<img' in description:
+            elif description and '<img' in description:
                 p = re.compile(r'<img[\s\S+]?src=\"(\S+)?\"')
                 if m := p.search(description):
                     media_content = m.group(1)
