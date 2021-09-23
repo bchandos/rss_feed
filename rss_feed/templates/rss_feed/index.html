@@ -117,7 +117,7 @@
                 on {{ item.Item.publication_date|datetimeformat }}
             </em>
         </header>
-        <p>{{ item.Item.description|striptags|safe|truncate }}</p>
+        <p>{{ item.Item.description|striptags|truncate }}</p>
         <p>
             {% if item.UserItem.read %}
                 <a class="w3-btn w3-round w3-light-grey marker btn-dark" data-id="{{ item.Item.id }}" data-read="true">Mark Unread</a>
