@@ -144,7 +144,8 @@ def bookmarked_index(feed_id):
             sort_order_opp=sort_order_opp,
             more_read=True,
             more_unread=False,
-            )
+            bookmarks=True,
+        )
 
     items = query_items(user_id=user_id,
                         order=order_by, bookmarks_only=True)
@@ -154,7 +155,8 @@ def bookmarked_index(feed_id):
         sort_order_opp=sort_order_opp,
         more_read=True,
         more_unread=False,
-        )
+        bookmarks=True,
+    )
 
 
 @bp.route('/add_feed', methods=('GET', 'POST'))
