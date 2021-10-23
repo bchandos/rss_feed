@@ -332,7 +332,7 @@ def article_contents():
     id = request.args.get('id', 0, type=int)
     if id:
         item = Item.query.get(id)
-        return jsonify(article_contents=item.content)
+        return jsonify(article_contents=item.content, link=item.link)
 
 
 @bp.route('/mark_read_all', methods=('POST',))

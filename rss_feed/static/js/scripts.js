@@ -231,7 +231,9 @@ for (let link of articlePreviewLinks) {
         const json = await response.json();
         const contentTarget = document.getElementById('article-content-target');
         const contentModal = document.getElementById('article-content-modal');
+        const contentLink = document.getElementById('link-article-content-modal');
         contentTarget.innerHTML = json.article_contents;
+        contentLink.setAttribute('href', json.link);
         contentModal.classList.remove('w3-hide');
         contentModal.classList.add('w3-show');
         hideLoader(e);
