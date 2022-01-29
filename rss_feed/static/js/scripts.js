@@ -154,13 +154,16 @@ if (showReadBtn) {
     showReadBtn.addEventListener('click', (e) => {
         _state.showRead = !_state.showRead;
         const articlesBtn = document.getElementById('more-articles-btn');
+        const btnIcon = e.target.querySelector('span.material-icons.btn-icon');
+        const btnText = e.target.querySelector('span.btn-text');
         if (_state.showRead) {
             const readArticles = document.querySelectorAll('article.read');
             for (let readArticle of readArticles) {
                 readArticle.style.opacity = 1;
                 readArticle.classList.remove('w3-hide');
             }
-            e.target.innerText = 'Hide Read';
+            btnText.innerText = 'Hide Read';
+            btnIcon.innerText = 'visibility_off'
             if (articlesBtn.dataset.moreUnread === 'True') {
                 articlesBtn.classList.add('w3-show');
                 articlesBtn.classList.remove('w3-hide');
@@ -170,7 +173,8 @@ if (showReadBtn) {
             for (let readArticle of readArticles) {
                 readArticle.classList.add('w3-hide');
             }
-            e.target.innerText = 'Show Read';
+            btnText.innerText = 'Show Read';
+            btnIcon.innerText = 'visibility'
             if (articlesBtn.dataset.moreUnread === 'True' && articlesBtn.dataset.moreRead === 'False') {
                 articlesBtn.classList.add('w3-hide');
                 articlesBtn.classList.remove('w3-show');

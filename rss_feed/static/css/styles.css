@@ -83,6 +83,16 @@
     background-color: rgba(97, 97, 97, 0.7);
 }
 
+#content-container {
+    display: flex;
+    justify-content: center;
+}
+
+#main-content {
+    max-width: 800px;
+    flex-grow: 1;
+}
+
 i.btn-icon {
     vertical-align: middle;
 }
