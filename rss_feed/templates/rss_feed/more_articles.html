@@ -37,16 +37,27 @@
         </p>
     </div>
 </article>
-{% endfor %}
-<span id="more-articles-target">
+{% if loop.last %}
+    <span id="more-articles-target" class="w3-container">
+        <button 
+            id="more-articles-btn" 
+            data-last-item-id="{{ items[-1].Item.id }}"
+            {% if feed_name %}data-feed-id="{{ feed_id }}"{% endif %} 
+            data-show-read="{{ show_read }}"
+            data-sort-order="{{ sort_order }}"
+            class="w3-btn w3-round w3-light-grey btn-dark w3-block"
+        >
+            Load More Articles
+        </button>
+    </span>
+{% endif %}
+{% else %}
+<span id="more-articles-target" class="w3-container">
     <button 
-        id="more-articles-btn" 
-        article-count="{{ new_length }}" 
-        {% if feed_name %}feed-id="{{ feed_id }}"{% endif %} 
         class="w3-btn w3-round w3-light-grey btn-dark w3-block"
-        more-read="{{more_read}}"
-        more-unread="{{more_unread}}"
+        disabled
     >
-        Load More Articles
+        No more articles
     </button>
 </span>
+{% endfor %}

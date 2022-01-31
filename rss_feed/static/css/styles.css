@@ -112,6 +112,10 @@ h3.bg-image > span {
     padding: 3px;
 }
 
+.item {
+    transition: opacity 250ms ease-in-out;
+}
+
 @media (prefers-color-scheme: dark) {
     h3.bg-image {
         box-shadow: inset -2px -2px 5px 0px #616161, 

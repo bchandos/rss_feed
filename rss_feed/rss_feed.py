@@ -21,21 +21,24 @@ from rss_feed.models import User, Feed, UserFeed, UserItem, Item, db
 bp = Blueprint('rss_feed', __name__)
 
 
-def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookmarks_only=False):
+def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookmarks_only=False, read=False):
     q = db.session.query(Item, Feed, UserFeed, UserItem).join(Feed, Feed.id==Item.feed_id).join(UserFeed, UserFeed.feed_id==Item.feed_id).join(UserItem)
     bm_options = [True] if bookmarks_only else [True, False]
+    read_options = [True, False] if read else [False]
     order_option = Item.publication_date.desc() if order=='DESC' else Item.publication_date.asc()
     if feed_id:
         return q.filter(UserFeed.user_id==user_id, 
                     UserItem.user_id==user_id,
                     UserItem.bookmark.in_(bm_options),
+                    UserItem.read.in_(read_options),
                     Item.feed_id==feed_id).\
                     order_by(order_option).\
                     limit(limit).offset(offset).all()
 
     return q.filter(UserFeed.user_id==user_id, 
                     UserItem.user_id==user_id,
-                    UserItem.bookmark.in_(bm_options)).\
+                    UserItem.bookmark.in_(bm_options),
+                    UserItem.read.in_(read_options)).\
                     order_by(order_option).\
                     limit(limit).offset(offset).all()
 
@@ -58,29 +61,29 @@ def error_handler(error):
 @login_required
 def index():
     user_id = g.user.id
-    sort_param = request.args.get('sort', None)
+    sort_param = request.args.get('sort')
+    show_read = request.args.get('show_read')
     if sort_param == 'Ascending':
         order_by = 'ASC'
         sort_order_opp = 'Descending'
     else:
         order_by = 'DESC'
         sort_order_opp = 'Ascending'
-    items = query_items(user_id=user_id, order=order_by, limit=105)
-
-    more_read = False
-    more_unread = False
-    if len(items) > 100:
-        xtra_items = items[100:]
-        more_unread = any([i.UserItem.read for i in xtra_items])
-        more_read = any([not i.UserItem.read for i in xtra_items])
+    read = show_read == 'True'
+    items = query_items(
+        user_id=user_id, 
+        order=order_by, 
+        limit=25, 
+        read=read
+    )
 
     return render_template(
         'rss_feed/index.html', 
-        items=items[:100], 
+        items=items, 
+        sort_order=order_by,
         sort_order_opp=sort_order_opp,
-        more_read=more_read,
-        more_unread=more_unread,
-        )
+        show_read=read,
+    )
 
 
 @bp.route('/<int:feed_id>')
@@ -88,6 +91,7 @@ def index():
 def feed_index(feed_id):
     user_id = g.user.id
     sort_param = request.args.get('sort', None)
+    show_read = request.args.get('show_read')
     if sort_param == 'Ascending':
         order_by = 'ASC'
         sort_order_opp = 'Descending'
@@ -99,25 +103,24 @@ def feed_index(feed_id):
         feed_name = user_feed.user_feed_name
     else:
         feed_name = Feed.query.get(feed_id).name    
-    items = query_items(user_id=user_id,
-                        order=order_by, feed_id=feed_id, limit=105)
-
-    more_read = False
-    more_unread = False
-    if len(items) > 100:
-        xtra_items = items[100:]
-        more_unread = any([i.UserItem.read for i in xtra_items])
-        more_read = any([not i.UserItem.read for i in xtra_items])
+    read = show_read == 'True'
+    items = query_items(
+        user_id=user_id, 
+        order=order_by, 
+        feed_id=feed_id, 
+        limit=25,
+        read=read,
+    )
 
     return render_template(
         'rss_feed/index.html',
-        items=items[:100], 
+        items=items, 
         feed_name=feed_name,
         feed_id=feed_id, 
+        sort_order=order_by,
         sort_order_opp=sort_order_opp,
-        more_read=more_read,
-        more_unread=more_unread,
-        )
+        show_read=read,
+    )
 
 
 @bp.route('/bookmarks', defaults={'feed_id': None})
@@ -134,27 +137,32 @@ def bookmarked_index(feed_id):
         sort_order_opp = 'Ascending'
     if feed_id:
         feed_name = Feed.query.get(feed_id).name
-        items = query_items(user_id=user_id, order=order_by,
-                            feed_id=feed_id, bookmarks_only=True)
+        items = query_items(
+            user_id=user_id, 
+            order=order_by,
+            feed_id=feed_id, 
+            bookmarks_only=True, 
+            read=True
+        )
         return render_template(
             'rss_feed/index.html', 
             items=items, 
             feed_name=feed_name, 
             feed_id=feed_id, 
             sort_order_opp=sort_order_opp,
-            more_read=True,
-            more_unread=False,
             bookmarks=True,
         )
 
-    items = query_items(user_id=user_id,
-                        order=order_by, bookmarks_only=True)
+    items = query_items(
+        user_id=user_id,
+        order=order_by, 
+        bookmarks_only=True, 
+        read=True
+    )
     return render_template(
         'rss_feed/index.html', 
         items=items, 
         sort_order_opp=sort_order_opp,
-        more_read=True,
-        more_unread=False,
         bookmarks=True,
     )
 
@@ -376,30 +384,48 @@ def test_flash():
 @login_required
 def more_articles():
     feed_id = request.args.get('feed_id')
-    start_at = int(request.args.get('start_at'))
+    last_item_id = request.args.get('last_item_id')
+    sort_order = request.args.get('sort_order')
+    start_at = request.args.get('start_at')
+    show_read = request.args.get('show_read')
+
+    read = show_read == 'True'
+    # item = Item.query.get(last_item_id)
+
     items = query_items(
         g.user.id, 
-        order='DESC', 
-        limit=105, 
+        order=sort_order, 
+        limit=25, 
         offset=start_at, 
         feed_id=int(feed_id) if feed_id else None, 
-        bookmarks_only=False
+        bookmarks_only=False,
+        read=read
     )
+    offset = 0
+    for idx, item in enumerate(items):
+        if item.Item.id == last_item_id:
+            offset = idx
+            break
+    
+    if offset:
+        items = query_items(
+            g.user.id, 
+            order=sort_order, 
+            limit=25, 
+            offset=start_at + offset, 
+            feed_id=int(feed_id) if feed_id else None, 
+            bookmarks_only=False,
+            read=read
+        )
 
-    more_read = False
-    more_unread = False
-    if len(items) > 100:
-        xtra_items = items[100:]
-        more_unread = any([i.UserItem.read for i in xtra_items])
-        more_read = any([not i.UserItem.read for i in xtra_items])
-
-    return render_template(
-        'rss_feed/more_articles.html', 
-        items=items[:100],
-        more_read=more_read,
-        more_unread=more_unread,
-        new_length=start_at + len(items),
-    )
+    return jsonify(dict(
+        new_contents=render_template(
+            'rss_feed/more_articles.html', 
+            items=items,
+            show_read=read,
+            sort_order=sort_order
+        )
+    ))
 
 
 def download_feed(feed_url):

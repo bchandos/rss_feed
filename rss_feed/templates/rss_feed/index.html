@@ -39,11 +39,18 @@
 
 {% block content %}
 <div class="w3-bar w3-container">
-    <a class="w3-btn w3-round w3-light-grey w3-small btn-dark" id="show_read">
-        <span class="material-icons btn-icon w3-small">visibility</span>
-        <span class="btn-text w3-hide-small w3-hide-medium">Show Read</span>
-    </a>
     {% if feed_name %}
+        <a 
+            class="w3-btn w3-round w3-light-grey w3-small btn-dark" 
+            href="{{ url_for(request.url_rule.endpoint, feed_id=feed_id, show_read=not show_read) }}"
+        >
+            <span class="material-icons btn-icon w3-small">
+                {{'visibility_off' if show_read else 'visibility'}}
+            </span>
+            <span class="btn-text w3-hide-small w3-hide-medium">
+                {{'Hide Read' if show_read else 'Show Read'}}
+            </span>
+        </a>
         <a class="w3-btn w3-round w3-light-grey w3-small btn-dark" href="{{ url_for(request.url_rule.endpoint, feed_id=feed_id, sort=sort_order_opp) }}">
             <div>
                 <span class="material-icons btn-icon w3-small">
@@ -59,6 +66,17 @@
             </div>
         </a>
     {% else %}
+        <a 
+            class="w3-btn w3-round w3-light-grey w3-small btn-dark" 
+            href="{{ url_for(request.url_rule.endpoint, show_read=not show_read) }}"
+        >
+            <span class="material-icons btn-icon w3-small">
+                {{'visibility_off' if show_read else 'visibility'}}
+            </span>
+            <span class="btn-text w3-hide-small w3-hide-medium">
+                {{'Hide Read' if show_read else 'Show Read'}}
+            </span>
+        </a>
         <a class="w3-btn w3-round w3-light-grey w3-small btn-dark" href="{{ url_for(request.url_rule.endpoint, sort=sort_order_opp) }}">
             <div>
                 <span class="material-icons btn-icon w3-small">
@@ -98,7 +116,7 @@
 </div>
 {% endif %}
 {% for item in items %}
-<article class="w3-round w3-card w3-margin-bottom w3-leftbar item {% if item.UserItem.read %}w3-border-pale-blue read w3-hide{% else %}w3-border-light-blue unread{% endif %}" id="{{ item.Item.id }}" style="transition: opacity 200ms;">
+<article class="w3-round w3-card w3-margin-bottom w3-leftbar item {% if item.UserItem.read %}w3-border-pale-blue read{% else %}w3-border-light-blue unread{% endif %}" id="{{ item.Item.id }}">
     <div class="w3-container">
         <header>
             {% if item.UserItem.bookmark %}
@@ -153,27 +171,16 @@
     </div>
 </article>
 {% endfor %}
-<span id="more-articles-target">
+<span id="more-articles-target" class="w3-container">
     <button 
         id="more-articles-btn" 
-        data-article-count="{{ (items | length) + 1 }}" 
+        data-last-item-id="{{ items[-1].Item.id }}"
         {% if feed_name %}data-feed-id="{{ feed_id }}"{% endif %} 
+        data-show-read="{{ show_read }}"
+        data-sort-order="{{ sort_order }}"
         class="w3-btn w3-round w3-light-grey btn-dark w3-block"
-        data-more-read="{{more_read}}"
-        data-more-unread="{{more_unread}}"
     >
         Load More Articles
     </button>
 </span>
-    
-<div class="w3-panel w3-pale-green no-more-dark">
-    <p>No more articles in feed.</p>
-</div>
-{% if bookmarks %}
-    <script>
-        window.addEventListener('load', () => {
-            document.getElementById('show_read').click();
-        });
-    </script>
-{% endif %}
 {% endblock %}

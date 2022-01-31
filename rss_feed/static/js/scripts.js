@@ -1,15 +1,15 @@
 let _state = {
-    showRead: false,
+    showRead: window.location.toString().includes('show_read=True'),
 };
 
-const showLoader = (e) => {
-    if (e.currentTarget && !(e.currentTarget instanceof Window)) {
-        e.currentTarget.classList.add('w3-disabled');
-        if (e.currentTarget instanceof HTMLAnchorElement) {
-            const url = e.currentTarget.getAttribute('href');
+const showLoader = (target) => {
+    if (target instanceof HTMLElement) {
+        target.classList.add('w3-disabled');
+        if (target instanceof HTMLAnchorElement) {
+            const url = target.getAttribute('href');
             if (url) {
-                e.currentTarget.removeAttribute('href');
-                e.currentTarget.dataset.originalUrl = url;
+                target.removeAttribute('href');
+                target.dataset.originalUrl = url;
             }
         }
     }
@@ -25,14 +25,14 @@ const showLoader = (e) => {
     document.body.insertBefore(loaderBgDiv, firstChild);
 }
 
-const hideLoader = (e) => {
-    if (e.target) {
+const hideLoader = (target) => {
+    if (target) {
         // re-enable the target
-        e.target.classList.remove('w3-disabled');
-        if (e.target instanceof HTMLAnchorElement) {
-            const url = e.target.dataset.originalUrl;
+        target.classList.remove('w3-disabled');
+        if (target instanceof HTMLAnchorElement) {
+            const url = target.dataset.originalUrl;
             if (url) {
-                e.target.setAttribute('href', url);
+                target.setAttribute('href', url);
             }
         }
     }
@@ -64,9 +64,9 @@ for (const deleteFeedBtn of deleteFeedBtns) {
 const markers = document.querySelectorAll('.marker');
 for (let marker of markers) {
     marker.addEventListener('click', async (e) => {
-        showLoader(e);
-        let label;
         const target = e.target;
+        showLoader(target);
+        let label;
         const response = await fetch(`${$SCRIPT_ROOT}/_mark_read`, {
             method: 'POST',
             headers: {
@@ -80,8 +80,7 @@ for (let marker of markers) {
         const article = target.closest('article');
         if (!_state.showRead && json.read === 'Read') {
             article.addEventListener('transitionend', (e) => {
-                article.classList.remove('unread');
-                article.classList.add('read', 'w3-hide', 'w3-border-pale-blue')
+                article.remove();
             });
             article.style.opacity = 0;
             label = 'Mark Unread';
@@ -95,7 +94,7 @@ for (let marker of markers) {
             label = 'Mark Read';
         }
         target.innerText = label;
-        hideLoader(e);
+        hideLoader(target);
     });
 }
 
@@ -120,7 +119,10 @@ const markAllRead = async (e) => {
         }
     }
 }
-document.getElementById('mark-all-read').addEventListener('click', markAllRead);
+const markAllReadBtn = document.getElementById('mark-all-read');
+if (markAllReadBtn) {
+    markAllReadBtn.addEventListener('click', markAllRead);
+}
 
 // Bookmarks
 const bookmarks = document.querySelectorAll('.bookmark');
@@ -148,79 +150,30 @@ for (let bookmark of bookmarks) {
     })
 }
 
-// Show / hide
-const showReadBtn = document.getElementById('show_read');
-if (showReadBtn) {
-    showReadBtn.addEventListener('click', (e) => {
-        _state.showRead = !_state.showRead;
-        const articlesBtn = document.getElementById('more-articles-btn');
-        const btnIcon = e.target.querySelector('span.material-icons.btn-icon');
-        const btnText = e.target.querySelector('span.btn-text');
-        if (_state.showRead) {
-            const readArticles = document.querySelectorAll('article.read');
-            for (let readArticle of readArticles) {
-                readArticle.style.opacity = 1;
-                readArticle.classList.remove('w3-hide');
-            }
-            btnText.innerText = 'Hide Read';
-            btnIcon.innerText = 'visibility_off'
-            if (articlesBtn.dataset.moreUnread === 'True') {
-                articlesBtn.classList.add('w3-show');
-                articlesBtn.classList.remove('w3-hide');
-            }
-        } else {
-            const readArticles = document.querySelectorAll('article.read');
-            for (let readArticle of readArticles) {
-                readArticle.classList.add('w3-hide');
-            }
-            btnText.innerText = 'Show Read';
-            btnIcon.innerText = 'visibility'
-            if (articlesBtn.dataset.moreUnread === 'True' && articlesBtn.dataset.moreRead === 'False') {
-                articlesBtn.classList.add('w3-hide');
-                articlesBtn.classList.remove('w3-show');
-            }
-        }
-    })
-}
+// The "Load More Articles" button will be dynamically added to the 
+// page upon successful loading, and thus a direct event listener
+// will not work. Instead, we place the event listener on a container
+// and match its target.
 
+const moreArticlesDelegator = document.getElementById('main-content');
 
-// Show more button...
-const moreArticlesBtn = document.getElementById('more-articles-btn');
-
-if (moreArticlesBtn) {
-    // Set initial visibility
-    if (moreArticlesBtn.dataset.moreRead === 'True') {
-        moreArticlesBtn.classList.add('w3-show');
-        moreArticlesBtn.classList.remove('w3-hide');
-    } else if (moreArticlesBtn.dataset.moreUnread === 'True' && _state.showRead) {
-        moreArticlesBtn.classList.add('w3-show');
-        moreArticlesBtn.classList.remove('w3-hide');
-    } else {
-        moreArticlesBtn.classList.add('w3-hide');
-        moreArticlesBtn.classList.remove('w3-show');
-    }
+if (moreArticlesDelegator) {
     // Handle click
-    moreArticlesBtn.addEventListener('click', async (e) => {
-        showLoader(e);
-        const startAt = e.target.dataset.articleCount;
-        const feedId = e.target.dataset.feedId || '';
-        const response = await fetch(`${$SCRIPT_ROOT}/_more_articles?feed_id=${feedId}&start_at=${startAt}`);
-        const text = await response.text();
-        const replaceTarget = document.getElementById('more-articles-target');
-        replaceTarget.outerHTML = text;
-        // New articles will be hidden by default; set visibility based on current state
-        const readArticles = document.querySelectorAll('article.read');
-        if (_state.showRead) {
-            for (let readArticle of readArticles) {
-                readArticle.classList.remove('w3-hide');
-            }
-        } else {
-            for (let readArticle of readArticles) {
-                readArticle.classList.add('w3-hide');
-            }
-            e.target.innerText = 'Show Read';
+    moreArticlesDelegator.addEventListener('click', async (e) => {
+        if (e.target.matches('#more-articles-btn')) {
+            const target = e.target;
+            showLoader(target);
+            const lastItemId = e.target.dataset.lastItemId;
+            const sortOrder = e.target.dataset.sortOrder;
+            const showRead = e.target.dataset.showRead;
+            const feedId = e.target.dataset.feedId || '';
+            const startAt = document.querySelectorAll('article.item').length + 1;
+            const response = await fetch(`${$SCRIPT_ROOT}/_more_articles?feed_id=${feedId}&last_item_id=${lastItemId}&sort_order=${sortOrder}&show_read=${showRead}&start_at=${startAt}`);
+            const json = await response.json();
+            const replaceTarget = document.getElementById('more-articles-target');
+            replaceTarget.outerHTML = json.new_contents;
+            hideLoader(target);
         }
-        hideLoader(e);
     })
 }
 
@@ -229,7 +182,8 @@ if (moreArticlesBtn) {
 const articlePreviewLinks = document.querySelectorAll('.article-preview');
 for (let link of articlePreviewLinks) {
     link.addEventListener('click', async (e) => {
-        showLoader(e);
+        const target = e.currentTarget
+        showLoader(target);
         const articleId = e.currentTarget.dataset.id;
         const response = await fetch(`${$SCRIPT_ROOT}/_article_contents?id=${articleId}`);
         const json = await response.json();
@@ -240,7 +194,7 @@ for (let link of articlePreviewLinks) {
         contentLink.setAttribute('href', json.link);
         contentModal.classList.remove('w3-hide');
         contentModal.classList.add('w3-show');
-        hideLoader(e);
+        hideLoader(target);
     })
 }
 
