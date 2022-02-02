@@ -142,65 +142,67 @@ def parse_feed_items(feed_url):
 def download_items(url, feed_id):
     all_items = parse_feed_items(url)
     for item in all_items:
-        cur = db.cursor()
-        # Select all users
-        cur.execute(
-            """ SELECT user_id FROM user_feed WHERE user_feed.feed_id=%s """, 
-            (feed_id,)
-        )
-        users = [x['user_id'] for x in cur.fetchall()]
-        # Check if items exists
-        cur.execute(""" SELECT id FROM item WHERE item.guid=%s """, (item['guid'],))
-        item_exists = cur.fetchone()
-        if not item_exists:
-            # Only create item if it doesn't exist
-            cur.execute(""" 
-                INSERT INTO item
-                (feed_id, title, link, description, publication_date, guid, content, media_content)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                RETURNING id
-            """, (
-                feed_id, 
-                item['title'], 
-                item['link'], 
-                item['description'], 
-                item['publication_date'], 
-                item['guid'], 
-                item['content'],
-                item['media_content']
-            ))
-            
-            new_item_id = cur.fetchone()['id']
-
-            for user_id in users:
+        # Don't process items older than 14 days, because we delete those
+        if item['publication_date'] >= datetime.timestamp(datetime.now() - timedelta(days=14)): 
+            cur = db.cursor()
+            # Select all users
+            cur.execute(
+                """ SELECT user_id FROM user_feed WHERE user_feed.feed_id=%s """, 
+                (feed_id,)
+            )
+            users = [x['user_id'] for x in cur.fetchall()]
+            # Check if items exists
+            cur.execute(""" SELECT id FROM item WHERE item.guid=%s """, (item['guid'],))
+            item_exists = cur.fetchone()
+            if not item_exists:
+                # Only create item if it doesn't exist
                 cur.execute(""" 
-                    INSERT INTO user_item 
-                    (user_id, item_id, read, bookmark) 
-                    VALUES (%s, %s, %s, %s)
-                """, (user_id, new_item_id, False, False)
-                )
-            db.commit()
-        else:
-            # Only create user_item if it doesn't exist
-            for user_id in users:
-                cur.execute(""" 
-                    SELECT * FROM user_item 
-                    WHERE user_item.user_id=%s
-                    AND user_item.item_id=%s
+                    INSERT INTO item
+                    (feed_id, title, link, description, publication_date, guid, content, media_content)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id
                 """, (
-                    user_id,
-                    item_exists['id']
+                    feed_id, 
+                    item['title'], 
+                    item['link'], 
+                    item['description'], 
+                    item['publication_date'], 
+                    item['guid'], 
+                    item['content'],
+                    item['media_content']
                 ))
-                ui_exists = cur.fetchone()
-                if not ui_exists:
+                
+                new_item_id = cur.fetchone()['id']
+
+                for user_id in users:
                     cur.execute(""" 
-                        INSERT INTO user_item
-                        (user_id, item_id, read, bookmark)
+                        INSERT INTO user_item 
+                        (user_id, item_id, read, bookmark) 
                         VALUES (%s, %s, %s, %s)
-                    """, (user_id, item_exists['id'], False, False)
+                    """, (user_id, new_item_id, False, False)
                     )
-                    db.commit()
-        db.commit()
+                db.commit()
+            else:
+                # Only create user_item if it doesn't exist
+                for user_id in users:
+                    cur.execute(""" 
+                        SELECT * FROM user_item 
+                        WHERE user_item.user_id=%s
+                        AND user_item.item_id=%s
+                    """, (
+                        user_id,
+                        item_exists['id']
+                    ))
+                    ui_exists = cur.fetchone()
+                    if not ui_exists:
+                        cur.execute(""" 
+                            INSERT INTO user_item
+                            (user_id, item_id, read, bookmark)
+                            VALUES (%s, %s, %s, %s)
+                        """, (user_id, item_exists['id'], False, False)
+                        )
+                        db.commit()
+            db.commit()
 
 def delete_items(feed_id):
     # Get rid of old, read, unbookmarked items
