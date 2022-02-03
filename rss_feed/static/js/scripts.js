@@ -2,6 +2,18 @@ let _state = {
     showRead: window.location.toString().includes('show_read=True'),
 };
 
+const delegator = (parentSelector, childSelector, eventName, callback) => {
+    const parents = document.querySelectorAll(parentSelector);
+    for (let parent of parents) {
+        parent.addEventListener(eventName, (e) => {
+            // console.log(e.target);
+            if (e.target.matches(childSelector)) {
+                callback(e);
+            }
+        })
+    }
+}
+
 const showLoader = (target) => {
     if (target instanceof HTMLElement) {
         target.classList.add('w3-disabled');
@@ -60,43 +72,41 @@ for (const deleteFeedBtn of deleteFeedBtns) {
     }
 }
 
-// Mark Read
-const markers = document.querySelectorAll('.marker');
-for (let marker of markers) {
-    marker.addEventListener('click', async (e) => {
-        const target = e.target;
-        showLoader(target);
-        let label;
-        const response = await fetch(`${$SCRIPT_ROOT}/_mark_read`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                id: target.dataset.id
-            })
-        });
-        const json = await response.json();
-        const article = target.closest('article');
-        if (!_state.showRead && json.read === 'Read') {
-            article.addEventListener('transitionend', (e) => {
-                article.remove();
-            });
-            article.style.opacity = 0;
-            label = 'Mark Unread';
-        } else if (json.read === 'Read') {
-            article.classList.remove('unread', 'w3-border-light-blue');
-            article.classList.add('read', 'w3-border-pale-blue');
-            label = 'Mark Unread';
-        } else {
-            article.classList.remove('read', 'w3-border-pale-blue');
-            article.classList.add('unread', 'w3-border-light-blue');
-            label = 'Mark Read';
-        }
-        target.innerText = label;
-        hideLoader(target);
+const markRead = async (e) => {
+    const target = e.target;
+    showLoader(target);
+    let label;
+    const response = await fetch(`${$SCRIPT_ROOT}/_mark_read`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id: target.dataset.id
+        })
     });
+    const json = await response.json();
+    const article = target.closest('article');
+    if (!_state.showRead && json.read === 'Read') {
+        article.addEventListener('transitionend', (e) => {
+            article.remove();
+        });
+        article.style.opacity = 0;
+        label = 'Mark Unread';
+    } else if (json.read === 'Read') {
+        article.classList.remove('unread', 'w3-border-light-blue');
+        article.classList.add('read', 'w3-border-pale-blue');
+        label = 'Mark Unread';
+    } else {
+        article.classList.remove('read', 'w3-border-pale-blue');
+        article.classList.add('unread', 'w3-border-light-blue');
+        label = 'Mark Read';
+    }
+    target.innerText = label;
+    hideLoader(target);
 }
+
+delegator('#main-content', '.marker', 'click', markRead)
 
 // Mark All Read
 const markAllRead = async (e) => {
@@ -124,79 +134,67 @@ if (markAllReadBtn) {
     markAllReadBtn.addEventListener('click', markAllRead);
 }
 
-// Bookmarks
-const bookmarks = document.querySelectorAll('.bookmark');
-for (let bookmark of bookmarks) {
-    bookmark.addEventListener('click', async (e) => {
-        const target = e.currentTarget;
-        const response = await fetch(`${$SCRIPT_ROOT}/_bookmark`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                id: bookmark.dataset.id,
-                marked: bookmark.dataset.marked
-            })
-        });
-        const json = await response.json();
-        if (json.bookmark === 'true') {
-            target.firstElementChild.innerText = 'bookmark';
-            target.dataset.marked = 'true';
-        } else {
-            target.firstElementChild.innerText = 'bookmark_border';
-            target.dataset.marked = 'false';
-        }
-    })
+
+const addBookmark = async (e) => {
+    // Because there is a nested span that may fire the click event
+    // we need to look for the closest elements with class bookmark
+    const target = e.target.closest('.bookmark');
+    const response = await fetch(`${$SCRIPT_ROOT}/_bookmark`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id: target.dataset.id,
+            marked: target.dataset.marked
+        })
+    });
+    const json = await response.json();
+    if (json.bookmark === 'true') {
+        target.firstElementChild.innerText = 'bookmark';
+        target.dataset.marked = 'true';
+    } else {
+        target.firstElementChild.innerText = 'bookmark_border';
+        target.dataset.marked = 'false';
+    }
 }
 
-// The "Load More Articles" button will be dynamically added to the 
-// page upon successful loading, and thus a direct event listener
-// will not work. Instead, we place the event listener on a container
-// and match its target.
+delegator('#main-content', '.bookmark, .bookmark > i', 'click', addBookmark)
 
-const moreArticlesDelegator = document.getElementById('main-content');
-
-if (moreArticlesDelegator) {
-    // Handle click
-    moreArticlesDelegator.addEventListener('click', async (e) => {
-        if (e.target.matches('#more-articles-btn')) {
-            const target = e.target;
-            showLoader(target);
-            const lastItemId = e.target.dataset.lastItemId;
-            const sortOrder = e.target.dataset.sortOrder;
-            const showRead = e.target.dataset.showRead;
-            const feedId = e.target.dataset.feedId || '';
-            const startAt = document.querySelectorAll('article.item').length + 1;
-            const response = await fetch(`${$SCRIPT_ROOT}/_more_articles?feed_id=${feedId}&last_item_id=${lastItemId}&sort_order=${sortOrder}&show_read=${showRead}&start_at=${startAt}`);
-            const json = await response.json();
-            const replaceTarget = document.getElementById('more-articles-target');
-            replaceTarget.outerHTML = json.new_contents;
-            hideLoader(target);
-        }
-    })
+const moreArticles = async (e) => {
+    const target = e.target;
+    showLoader(target);
+    const lastItemId = e.target.dataset.lastItemId;
+    const sortOrder = e.target.dataset.sortOrder;
+    const showRead = e.target.dataset.showRead;
+    const feedId = e.target.dataset.feedId || '';
+    const startAt = document.querySelectorAll('article.item').length + 1;
+    const response = await fetch(`${$SCRIPT_ROOT}/_more_articles?feed_id=${feedId}&last_item_id=${lastItemId}&sort_order=${sortOrder}&show_read=${showRead}&start_at=${startAt}`);
+    const json = await response.json();
+    const replaceTarget = document.getElementById('more-articles-target');
+    replaceTarget.outerHTML = json.new_contents;
+    hideLoader(target);
 }
 
+delegator('#main-content', '#more-articles-btn', 'click', moreArticles)
 
-// Article preview modal
-const articlePreviewLinks = document.querySelectorAll('.article-preview');
-for (let link of articlePreviewLinks) {
-    link.addEventListener('click', async (e) => {
-        const target = e.currentTarget
-        showLoader(target);
-        const articleId = e.currentTarget.dataset.id;
-        const response = await fetch(`${$SCRIPT_ROOT}/_article_contents?id=${articleId}`);
-        const json = await response.json();
-        const contentTarget = document.getElementById('article-content-target');
-        const contentModal = document.getElementById('article-content-modal');
-        const contentLink = document.getElementById('link-article-content-modal');
-        contentTarget.innerHTML = json.article_contents;
-        contentLink.setAttribute('href', json.link);
-        contentModal.classList.remove('w3-hide');
-        contentModal.classList.add('w3-show');
-        hideLoader(target);
-    })
+const showArticlePreview = async (e) => {
+    const target = e.target.closest('.article-preview')
+    showLoader(target);
+    const articleId = target.dataset.id;
+    const response = await fetch(`${$SCRIPT_ROOT}/_article_contents?id=${articleId}`);
+    const json = await response.json();
+    const contentTarget = document.getElementById('article-content-target');
+    const contentModal = document.getElementById('article-content-modal');
+    const contentLink = document.getElementById('link-article-content-modal');
+    contentTarget.innerHTML = json.article_contents;
+    contentLink.setAttribute('href', json.link);
+    contentModal.classList.remove('w3-hide');
+    contentModal.classList.add('w3-show');
+    hideLoader(target);
 }
+
+delegator('#main-content', '.article-preview, .article-preview h3, .article-preview span', 'click', showArticlePreview)
 
 const modalCloseBtn = document.getElementById('close-article-content-modal');
 modalCloseBtn.addEventListener('click', (e) => {
