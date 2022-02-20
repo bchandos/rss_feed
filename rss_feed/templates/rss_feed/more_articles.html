@@ -1,63 +1,26 @@
-{% for item in items %}
-<article class="w3-round w3-card w3-margin-bottom w3-leftbar item {% if item.UserItem.read %}w3-border-pale-blue read w3-hide{% else %}w3-border-light-blue unread{% endif %}" id="{{ item.Item.id }}">
-    <div class="w3-container">
-        <header>
-            {% if item.UserItem.bookmark %}
-                <a class="w3-right w3-button w3-circle bookmark w3-xlarge" data-id="{{ item.Item.id }}" data-marked="true">
-                    <i class="material-icons">bookmark</i>
-                </a>
-                
-                {% else %}
-                <a class="w3-right w3-button w3-circle bookmark w3-xlarge" data-id="{{ item.Item.id }}" data-marked="false">
-                    <i class="material-icons">bookmark_border</i>
-                </a>
-                
-            {% endif %}
-            <a href="{{ item.Item.link }}">
-                <h3>{{ item.Item.title }}</h3>
-            </a>
-            <em>from 
-                <a href="/{{ item.Item.feed_id }}">
-                    {% if item.UserFeed.user_feed_name %}
-                    {{ item.UserFeed.user_feed_name }}
-                    {% else %}
-                    {{ item.Feed.name }}
-                    {% endif %}
-                </a> 
-                on {{ item.Item.publication_date|datetimeformat }}
-            </em>
-        </header>
-        <p>{{ item.Item.description|safe|truncate }}</p>
-        <p>
-            {% if item.UserItem.read %}
-                <a class="w3-btn w3-round w3-light-grey marker btn-dark" data-id="{{ item.Item.id }}" data-read="true">Mark Unread</a>
-            {% else %}
-                <a class="w3-btn w3-round w3-light-grey marker btn-dark" data-id="{{ item.Item.id }}" data-read="false">Mark Read</a>
-            {% endif %}
-        </p>
-    </div>
-</article>
-{% if loop.last %}
-    <span id="more-articles-target" class="w3-container">
-        <button 
-            id="more-articles-btn" 
-            data-last-item-id="{{ items[-1].Item.id }}"
-            {% if feed_name %}data-feed-id="{{ feed_id }}"{% endif %} 
-            data-show-read="{{ show_read }}"
-            data-sort-order="{{ sort_order }}"
-            class="w3-btn w3-round w3-light-grey btn-dark w3-block"
-        >
-            Load More Articles
-        </button>
-    </span>
-{% endif %}
-{% else %}
+{% for item in items %} {% include 'rss_feed/article.html' %} {% if loop.last %}
 <span id="more-articles-target" class="w3-container">
-    <button 
-        class="w3-btn w3-round w3-light-grey btn-dark w3-block"
-        disabled
-    >
-        No more articles
-    </button>
+  <button
+    id="more-articles-btn"
+    data-last-item-id="{{ items[-1].Item.id }}"
+    {%
+    if
+    feed_name
+    %}data-feed-id="{{ feed_id }}"
+    {%
+    endif
+    %}
+    data-show-read="{{ show_read }}"
+    data-sort-order="{{ sort_order }}"
+    class="w3-btn w3-round w3-light-grey btn-dark w3-block"
+  >
+    Load More Articles
+  </button>
+</span>
+{% endif %} {% else %}
+<span id="more-articles-target" class="w3-container">
+  <button class="w3-btn w3-round w3-light-grey btn-dark w3-block" disabled>
+    No more articles
+  </button>
 </span>
 {% endfor %}

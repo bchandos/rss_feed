@@ -1,188 +1,160 @@
-{% extends 'base.html' %}
-
-{% block header %}
-<h2>{% block title %}
-    {% if bookmarks %}
-        Bookmarks
-    {% else %}
-        News Feed Items
-    {% endif %}
-    {% endblock %}</h2>
+{% extends 'base.html' %} {% block header %}
+<h2>
+  {% block title %} {% if bookmarks %} Bookmarks {% else %} News Feed Items {%
+  endif %} {% endblock %}
+</h2>
 <div class="w3-section">
-    {% if g.user %}
-    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.add_feed') }}">
-        <i class="material-icons btn-icon">add</i>
-        <span class="w3-hide-small w3-hide-medium">Add New Feed</span>
-    </a>
-    {% if feed_name %}
-    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}">
-        <i class="material-icons btn-icon">refresh</i>
-        <span class="w3-hide-small w3-hide-medium">Refresh Feed</span>
-    </a>
-    <button class="w3-margin-right w3-button w3-light-blue" id="mark-all-read">
-        <i class="material-icons btn-icon">done_all</i>
-        <span class="w3-hide-small w3-hide-medium">Mark Feed Read</span>
-    </button>
-    {% else %}
-    <a class="w3-margin-right w3-btn w3-light-blue" href="{{ url_for('rss_feed.index') }}">
-        <i class="material-icons btn-icon">refresh</i>
-        <span class="w3-hide-small w3-hide-medium">Refresh All Feeds</span>
-    </a>
-    <button class="w3-margin-right w3-button w3-light-blue" id="mark-all-read">
-        <i class="material-icons btn-icon">done_all</i>
-        <span class="w3-hide-small w3-hide-medium">Mark All Read</span>
-    </button>
-    {% endif %}
-    {% endif %}
+  {% if g.user %}
+  <a
+    class="w3-margin-right w3-btn w3-light-blue"
+    href="{{ url_for('rss_feed.add_feed') }}"
+  >
+    <i class="material-icons btn-icon">add</i>
+    <span class="w3-hide-small w3-hide-medium">Add New Feed</span>
+  </a>
+  {% if feed_name %}
+  <a
+    class="w3-margin-right w3-btn w3-light-blue"
+    href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}"
+  >
+    <i class="material-icons btn-icon">refresh</i>
+    <span class="w3-hide-small w3-hide-medium">Refresh Feed</span>
+  </a>
+  <button class="w3-margin-right w3-button w3-light-blue" id="mark-all-read">
+    <i class="material-icons btn-icon">done_all</i>
+    <span class="w3-hide-small w3-hide-medium">Mark Feed Read</span>
+  </button>
+  {% else %}
+  <a
+    class="w3-margin-right w3-btn w3-light-blue"
+    href="{{ url_for('rss_feed.index') }}"
+  >
+    <i class="material-icons btn-icon">refresh</i>
+    <span class="w3-hide-small w3-hide-medium">Refresh All Feeds</span>
+  </a>
+  <button class="w3-margin-right w3-button w3-light-blue" id="mark-all-read">
+    <i class="material-icons btn-icon">done_all</i>
+    <span class="w3-hide-small w3-hide-medium">Mark All Read</span>
+  </button>
+  {% endif %} {% endif %}
 </div>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <div class="w3-bar w3-container">
-    {% if feed_name %}
-        <a 
-            class="w3-btn w3-round w3-light-grey w3-small btn-dark" 
-            href="{{ url_for(request.url_rule.endpoint, feed_id=feed_id, show_read=not show_read) }}"
-        >
-            <span class="material-icons btn-icon w3-small">
-                {{'visibility_off' if show_read else 'visibility'}}
-            </span>
-            <span class="btn-text w3-hide-small w3-hide-medium">
-                {{'Hide Read' if show_read else 'Show Read'}}
-            </span>
-        </a>
-        <a class="w3-btn w3-round w3-light-grey w3-small btn-dark" href="{{ url_for(request.url_rule.endpoint, feed_id=feed_id, sort=sort_order_opp) }}">
-            <div>
-                <span class="material-icons btn-icon w3-small">
-                    {{'arrow_upward' if sort_order_opp == 'Ascending' else 'arrow_downward'}}
-                </span>
-                <span class="btn-text w3-hide-small w3-hide-medium">Sort {{ sort_order_opp }}</span>
-            </div>
-        </a>
-        <a class="w3-btn w3-round w3-light-grey w3-small btn-dark" href="{{ url_for('rss_feed.bookmarked_index', feed_id=feed_id) }}">
-            <div>
-                <span class="material-icons btn-icon w3-small">bookmarks</span>
-                <span class="btn-text w3-hide-small w3-hide-medium">Feed Bookmarks</span>
-            </div>
-        </a>
-    {% else %}
-        <a 
-            class="w3-btn w3-round w3-light-grey w3-small btn-dark" 
-            href="{{ url_for(request.url_rule.endpoint, show_read=not show_read) }}"
-        >
-            <span class="material-icons btn-icon w3-small">
-                {{'visibility_off' if show_read else 'visibility'}}
-            </span>
-            <span class="btn-text w3-hide-small w3-hide-medium">
-                {{'Hide Read' if show_read else 'Show Read'}}
-            </span>
-        </a>
-        <a class="w3-btn w3-round w3-light-grey w3-small btn-dark" href="{{ url_for(request.url_rule.endpoint, sort=sort_order_opp) }}">
-            <div>
-                <span class="material-icons btn-icon w3-small">
-                    {{'arrow_upward' if sort_order_opp == 'Ascending' else 'arrow_downward'}}
-                </span>
-                <span class="btn-text w3-hide-small w3-hide-medium">Sort {{ sort_order_opp }}</span>
-            </div>
-        </a>
-        <a class="w3-btn w3-round w3-light-grey w3-small btn-dark" href="{{ url_for('rss_feed.bookmarked_index') }}">
-            <div>
-                <span class="material-icons btn-icon w3-small">bookmarks</span>
-                <span class="btn-text w3-hide-small w3-hide-medium">Bookmarks</span>
-            </div>
-        </a>
-    {% endif %}
+  {% if feed_name %}
+  <a
+    class="w3-btn w3-round w3-light-grey w3-small btn-dark"
+    href="{{ url_for(request.url_rule.endpoint, feed_id=feed_id, show_read=not show_read) }}"
+  >
+    <span class="material-icons btn-icon w3-small">
+      {{'visibility_off' if show_read else 'visibility'}}
+    </span>
+    <span class="btn-text w3-hide-small w3-hide-medium">
+      {{'Hide Read' if show_read else 'Show Read'}}
+    </span>
+  </a>
+  <a
+    class="w3-btn w3-round w3-light-grey w3-small btn-dark"
+    href="{{ url_for(request.url_rule.endpoint, feed_id=feed_id, sort=sort_order_opp) }}"
+  >
+    <div>
+      <span class="material-icons btn-icon w3-small">
+        {{'arrow_upward' if sort_order_opp == 'Ascending' else
+        'arrow_downward'}}
+      </span>
+      <span class="btn-text w3-hide-small w3-hide-medium"
+        >Sort {{ sort_order_opp }}</span
+      >
+    </div>
+  </a>
+  <a
+    class="w3-btn w3-round w3-light-grey w3-small btn-dark"
+    href="{{ url_for('rss_feed.bookmarked_index', feed_id=feed_id) }}"
+  >
+    <div>
+      <span class="material-icons btn-icon w3-small">bookmarks</span>
+      <span class="btn-text w3-hide-small w3-hide-medium">Feed Bookmarks</span>
+    </div>
+  </a>
+  {% else %}
+  <a
+    class="w3-btn w3-round w3-light-grey w3-small btn-dark"
+    href="{{ url_for(request.url_rule.endpoint, show_read=not show_read) }}"
+  >
+    <span class="material-icons btn-icon w3-small">
+      {{'visibility_off' if show_read else 'visibility'}}
+    </span>
+    <span class="btn-text w3-hide-small w3-hide-medium">
+      {{'Hide Read' if show_read else 'Show Read'}}
+    </span>
+  </a>
+  <a
+    class="w3-btn w3-round w3-light-grey w3-small btn-dark"
+    href="{{ url_for(request.url_rule.endpoint, sort=sort_order_opp) }}"
+  >
+    <div>
+      <span class="material-icons btn-icon w3-small">
+        {{'arrow_upward' if sort_order_opp == 'Ascending' else
+        'arrow_downward'}}
+      </span>
+      <span class="btn-text w3-hide-small w3-hide-medium"
+        >Sort {{ sort_order_opp }}</span
+      >
+    </div>
+  </a>
+  <a
+    class="w3-btn w3-round w3-light-grey w3-small btn-dark"
+    href="{{ url_for('rss_feed.bookmarked_index') }}"
+  >
+    <div>
+      <span class="material-icons btn-icon w3-small">bookmarks</span>
+      <span class="btn-text w3-hide-small w3-hide-medium">Bookmarks</span>
+    </div>
+  </a>
+  {% endif %}
 </div>
 {% if feed_name %}
 <div class="w3-container w3-margin-bottom w3-margin-top" id="feed-tools">
-    <a href="{{ url_for('rss_feed.index') }}"><i class="material-icons">home</i></a>
-    <span> > </span>
-    <a href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}">{{ feed_name }}</a>
-    <a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">
-        <!-- <img class="icon" src="{{ url_for('static', filename='icons/settings-icon.svg') }}" alt="Feed Settings" /> -->
-        <i class="material-icons">settings</i>
-    </a>
+  <a href="{{ url_for('rss_feed.index') }}"
+    ><i class="material-icons">home</i></a
+  >
+  <span> > </span>
+  <a href="{{ url_for('rss_feed.feed_index', feed_id=feed_id) }}"
+    >{{ feed_name }}</a
+  >
+  <a href="{{ url_for('rss_feed.edit_feed', id=feed_id) }}">
+    <!-- <img class="icon" src="{{ url_for('static', filename='icons/settings-icon.svg') }}" alt="Feed Settings" /> -->
+    <i class="material-icons">settings</i>
+  </a>
 </div>
 {% else %}
 <div class="w3-container w3-margin-bottom w3-margin-top">
-    <select class="w3-select" id="feed-selector">
-        <option selected></option>
-        {% for feed in g.user.feeds %}
-            <option value="{{feed.Feed.id}}">
-                {{feed.user_feed_name or feed.Feed.name}}
-            </option>
-        {% endfor %}
-    </select>
+  <select class="w3-select" id="feed-selector">
+    <option selected></option>
+    {% for feed in g.user.feeds %}
+    <option value="{{feed.Feed.id}}">
+      {{feed.user_feed_name or feed.Feed.name}}
+    </option>
+    {% endfor %}
+  </select>
 </div>
-{% endif %}
-{% for item in items %}
-<article class="w3-round w3-card w3-margin-bottom w3-leftbar item {% if item.UserItem.read %}w3-border-pale-blue read{% else %}w3-border-light-blue unread{% endif %}" id="{{ item.Item.id }}">
-    <div class="w3-container">
-        <header>
-            {% if item.UserItem.bookmark %}
-                <a class="w3-right w3-button w3-circle bookmark w3-xlarge" data-id="{{ item.Item.id }}" data-marked="true">
-                    <i class="material-icons">bookmark</i>
-                </a>
-            {% else %}
-                <a class="w3-right w3-button w3-circle bookmark w3-xlarge" data-id="{{ item.Item.id }}" data-marked="false">
-                    <i class="material-icons">bookmark_border</i>
-                </a>
-            {% endif %}
-            {% if item.UserFeed.preview_articles %}
-                <a class="article-preview" data-id="{{ item.Item.id }}" style="cursor: pointer; text-decoration: underline;">
-                    {% if item.Item.media_content %}
-                        <h3 class="bg-image" style="background-image: url('{{ item.Item.media_content }}')">
-                            <span>{{ item.Item.title }}</span>
-                        </h3>
-                    {% else %}
-                        <h3>{{ item.Item.title }}</h3>
-                    {% endif %}
-                </a>
-            {% else %}
-                <a href="{{ item.Item.link }}" target="_blank">
-                    {% if item.Item.media_content %}
-                        <h3 class="bg-image" style="background-image: url('{{ item.Item.media_content }}')">
-                            <span>{{ item.Item.title }}</span>
-                        </h3>
-                    {% else %}
-                        <h3>{{ item.Item.title }}</h3>
-                    {% endif %}
-                </a>
-            {% endif %}
-            <em>from 
-                <a href="/{{ item.Item.feed_id }}">
-                    {% if item.UserFeed.user_feed_name %}
-                    {{ item.UserFeed.user_feed_name }}
-                    {% else %}
-                    {{ item.Feed.name }}
-                    {% endif %}
-                </a> 
-                on {{ item.Item.publication_date|datetimeformat }}
-            </em>
-        </header>
-        <p>{{ item.Item.description|striptags|truncate }}</p>
-        <p>
-            {% if item.UserItem.read %}
-                <a class="w3-btn w3-round w3-light-grey marker btn-dark" data-id="{{ item.Item.id }}" data-read="true">Mark Unread</a>
-            {% else %}
-                <a class="w3-btn w3-round w3-light-grey marker btn-dark" data-id="{{ item.Item.id }}" data-read="false">Mark Read</a>
-            {% endif %}
-        </p>
-    </div>
-</article>
-{% if loop.last %}
-    <span id="more-articles-target" class="w3-container">
-        <button 
-            id="more-articles-btn" 
-            data-last-item-id="{{ items[-1].Item.id }}"
-            {% if feed_name %}data-feed-id="{{ feed_id }}"{% endif %} 
-            data-show-read="{{ show_read }}"
-            data-sort-order="{{ sort_order }}"
-            class="w3-btn w3-round w3-light-grey btn-dark w3-block"
-        >
-            Load More Articles
-        </button>
-    </span>
-{% endif %}
-{% endfor %}
-{% endblock %}
+{% endif %} {% for item in items %} {% include 'rss_feed/article.html' %} {% if
+loop.last %}
+<span id="more-articles-target" class="w3-container">
+  <button
+    id="more-articles-btn"
+    data-last-item-id="{{ items[-1].Item.id }}"
+    {%
+    if
+    feed_name
+    %}data-feed-id="{{ feed_id }}"
+    {%
+    endif
+    %}
+    data-show-read="{{ show_read }}"
+    data-sort-order="{{ sort_order }}"
+    class="w3-btn w3-round w3-light-grey btn-dark w3-block"
+  >
+    Load More Articles
+  </button>
+</span>
+{% endif %} {% endfor %} {% endblock %}
