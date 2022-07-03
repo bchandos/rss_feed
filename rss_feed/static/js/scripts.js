@@ -215,6 +215,19 @@ if (feedSelector) {
     })
 }
 
+// Login password show/hide
+const passwordIcon = document.getElementById('password-icon')
+if (passwordIcon) {
+    passwordIcon.addEventListener('click', (e) => {
+        const icon = e.target
+        const passwordInput = document.getElementById('password')
+        const newInputType = passwordInput.type === 'password' ? 'text' : 'password'
+        const newIconUrl = newInputType === 'password' ? '/static/icons/eye.svg' : '/static/icons/eye-off.svg'
+        icon.src = newIconUrl
+        passwordInput.type = newInputType
+    })
+}
+
 // Add a loader bar at the top of the screen so when in 
 // PWA mode, there is some user feedback that something is happening
 window.addEventListener('beforeunload', showLoader)
