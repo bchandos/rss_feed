@@ -93,6 +93,18 @@
     flex-grow: 1;
 }
 
+#password-container {
+    position: relative;
+}
+
+#password-icon {
+    position: absolute;
+    right: 0.5rem;
+    top: calc(50% - 10px);
+    width: 20px;
+    cursor: pointer;
+}
+
 i.btn-icon {
     vertical-align: middle;
 }

@@ -13,7 +13,10 @@
         </p>
         <p>
             <label for="password">Password</label>
-            <input class="w3-input w3-border input-dark" type="password" name="password" id="password" required>
+            <div id="password-container">
+                <input class="w3-input w3-border input-dark" type="password" name="password" id="password" required>
+                <img src="{{ url_for('static', filename='icons/eye.svg') }}" alt="View password as text" id="password-icon">
+            </div>
         </p>
         <p>
             <input class="w3-btn w3-light-blue btn-dark" type="submit" value="Register">
