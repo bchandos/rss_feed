@@ -62,21 +62,26 @@
     </header>
     <p>{{ item.Item.description|striptags|truncate }}</p>
     <p>
-      {% if item.UserItem.read %}
-      <a
-        class="w3-btn w3-round w3-light-grey marker btn-dark"
-        data-id="{{ item.Item.id }}"
-        data-read="true"
-        >Mark Unread</a
-      >
-      {% else %}
-      <a
-        class="w3-btn w3-round w3-light-grey marker btn-dark"
-        data-id="{{ item.Item.id }}"
-        data-read="false"
-        >Mark Read</a
-      >
-      {% endif %}
+      <div class="article-bottom">
+        {% if item.UserItem.read %}
+        <a
+          class="w3-btn w3-round w3-light-grey marker btn-dark"
+          data-id="{{ item.Item.id }}"
+          data-read="true"
+          >Mark Unread</a
+        >
+        {% else %}
+        <a
+          class="w3-btn w3-round w3-light-grey marker btn-dark"
+          data-id="{{ item.Item.id }}"
+          data-read="false"
+          >Mark Read</a
+        >
+        {% endif %}
+        <button class="w3-button article-share-button" data-link-url="{{ item.Item.link }}">
+          <span class="material-icons btn-icon">share</span>
+        </button>
+      </div>
     </p>
   </div>
 </article>

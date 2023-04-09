@@ -1,22 +1,19 @@
 # pylint: disable=no-member
 
 import xml.etree.ElementTree as ET
-from urllib.parse import urlparse, urlunparse
+from urllib.parse import urlparse
 from urllib.request import urlopen, Request
-from urllib.error import URLError, HTTPError
-from datetime import datetime, timedelta
-import time
-import re
+from datetime import datetime
+import os
 
 from flask import (Blueprint, flash, g, redirect, render_template, request,
-                   url_for, jsonify, make_response)
+                   url_for, jsonify)
 from werkzeug.exceptions import abort
-from dateutil.parser import parse
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.exc import IntegrityError, OperationalError
 
 from rss_feed.auth import login_required, debug_only
 from rss_feed.models import User, Feed, UserFeed, UserItem, Item, db
+
+from werkzeug.security import generate_password_hash
 
 bp = Blueprint('rss_feed', __name__)
 
@@ -45,6 +42,8 @@ def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookma
 @bp.before_app_first_request
 def check_db():
     try:
+        if os.environ.get('DEMO_MODE', False) == 'true':
+            demo_mode_setup()
         db.create_all()
         db.session.commit()
     except:
@@ -197,6 +196,7 @@ def add_feed():
                 db.session.add(new_uf)
                 db.session.commit()
                 feed_id = existing_feed.id
+                feed_name = existing_feed.name
             if feed_name == '':
                 return redirect(url_for('rss_feed.edit_feed', id=feed_id))
             else:
@@ -300,9 +300,10 @@ def datetimeformat(value, format='%m-%d-%Y @ %H:%M'):
 
 
 @bp.route('/_mark_read', methods=('POST',))
+@login_required
 def mark_read():
     user_id = g.user.id
-    id = request.json['id']
+    id = getattr(request.json, 'id', None) 
     if id:
         user_item = UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==id).first()
         if user_item.read == 0:
@@ -314,13 +315,15 @@ def mark_read():
         db.session.add(user_item)
         db.session.commit()
         return jsonify(id=id, read=new_status)
+    return ''
 
 
 @bp.route('/_bookmark', methods=('POST',))
+@login_required
 def bookmark():
     user_id = g.user.id
-    id = int(request.json.get('id', 0))
-    marked = request.json.get('marked', 'false')
+    id = int(getattr(request.json, 'id', 0))
+    marked = getattr(request.json, 'marked', 'false')
     
     if id:
         user_item = UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==id).first()
@@ -333,14 +336,17 @@ def bookmark():
         db.session.add(user_item)
         db.session.commit()
         return jsonify(id=id, bookmark=bm)
+    return ''
 
 
 @bp.route('/_article_contents')
+@login_required
 def article_contents():
     id = request.args.get('id', 0, type=int)
     if id:
         item = Item.query.get(id)
         return jsonify(article_contents=item.content, link=item.link)
+    return ''
 
 
 @bp.route('/mark_read_all', methods=('POST',))
@@ -385,8 +391,8 @@ def test_flash():
 def more_articles():
     feed_id = request.args.get('feed_id')
     last_item_id = request.args.get('last_item_id')
-    sort_order = request.args.get('sort_order')
-    start_at = request.args.get('start_at')
+    sort_order = request.args.get('sort_order', '')
+    start_at = int(request.args.get('start_at', 0))
     show_read = request.args.get('show_read')
 
     read = show_read == 'True'
@@ -453,11 +459,46 @@ def parse_feed_information(feed_url):
     """
     xml_file = download_feed(feed_url)
     if xml_file and xml_file.tag == 'rss':
-        title = xml_file[0].find('title').text
-        return dict(title=title)
+        title = xml_file[0].find('title')
+        return dict(title=title.text if title else '')
     elif xml_file and xml_file.tag == '{http://www.w3.org/2005/Atom}feed':
         ns = dict(atom='http://www.w3.org/2005/Atom')
-        title = xml_file.find('atom:title', ns).text
-        return dict(title=title)
+        title = xml_file.find('atom:title', ns)
+        return dict(title=title.text if title else '')
     else:
         return {}
+
+
+def demo_mode_setup():
+    db.drop_all()
+    db.session.commit()
+    db.create_all()
+    db.session.commit()
+    # Create a demo user
+    new_user = User(username='demo', password=generate_password_hash('demo'))
+    db.session.add(new_user)
+    db.session.commit()
+    # Add two example feeds
+    feed_1 = Feed(
+        name='Biz & IT – Ars Technica',
+        url='https://feeds.arstechnica.com/arstechnica/technology-lab'
+    )
+    feed_2 = Feed(
+        name='www.espn.com - TOP',
+        url='https://www.espn.com/espn/rss/news'
+    )
+    db.session.add(feed_1)
+    db.session.add(feed_2)
+    db.session.commit()
+    user_feed_1 = UserFeed(
+        user_id=new_user.id,
+        feed_id=feed_1.id
+    )
+    user_feed_2 = UserFeed(
+        user_id=new_user.id,
+        feed_id=feed_2.id
+    )
+    db.session.add(user_feed_1)
+    db.session.add(user_feed_2)
+    # Commit it!
+    db.session.commit()

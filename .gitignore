@@ -115,6 +115,9 @@ dmypy.json
 # VS Code
 .vscode/
 
+# Prettier
+prettier.config.js
+
 # Project specific
 TODO.md
 .devcontainer/

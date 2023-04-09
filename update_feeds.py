@@ -10,7 +10,7 @@ from dateutil.parser import parse
 
 db = RealDictConnection(os.environ['DATABASE_URL'])
 
-if os.environ['FLASK_ENV'] == 'development':
+if os.environ['FLASK_DEBUG'] == 'true':
     WAIT_MINUTES = int(os.environ.get('WAIT_MINUTES', 2))
     WAIT_SECONDS = 6
 else:
@@ -49,21 +49,23 @@ def parse_feed_items(feed_url):
         )
         all_items = xml_file[0].findall('item', ns)
         for item in all_items:
-            
-            title = item.find('title').text
-            
-            link = item.find('link').text
-            
-            guid = item.find('guid').text
+            title = item.find('title')
+            link = item.find('link')
+            guid = item.find('guid')
+            if not title or not link or not guid:
+                # Without all of these, it's not a valid item
+                continue
+            title = title.text
+            link = link.text
+            guid = guid.text
 
             if (d := item.find('description')) is not None:
                 description = d.text
             else:
                 description = 'No description available.'
-            
-            if (pd := item.find('pubDate')) is not None:
-                publication_date = datetime.timestamp(
-                    parse(pd.text))
+            pd = item.find('pubDate')
+            if pd and pd.text: 
+                publication_date = datetime.timestamp(parse(pd.text))
             else:
                 publication_date = datetime.timestamp(datetime.today())
             
@@ -98,20 +100,25 @@ def parse_feed_items(feed_url):
         all_items = xml_file.findall('atom:entry', ns)
         for item in all_items:
             
-            title = item.find('atom:title', ns).text
-            
-            link = item.find('atom:link', ns).attrib.get('href')
-            
-            guid = item.find('atom:id', ns).text
+            title = item.find('atom:title', ns)
+            link = item.find('atom:link', ns)
+            guid = item.find('atom:id', ns)
+            if not title or not link or not guid:
+                # Without all of these, not a valid item
+                continue
+
+            title = title.text
+            link = link.attrib.get('href')
+            guid = guid.text
             
             if (d := item.find('atom:summary', ns)) is not None:
                 description = d.text
             else:
                 description = 'No description available.'
             
-            if (pd := item.find('atom:updated', ns)) is not None:
-                publication_date = datetime.timestamp(
-                    parse(pd.text))
+            pd = item.find('atom:updated', ns)
+            if pd and pd.text: 
+                publication_date = datetime.timestamp(parse(pd.text))
             else:
                 publication_date = datetime.timestamp(datetime.today())
             
@@ -120,12 +127,11 @@ def parse_feed_items(feed_url):
             else:
                 content = None
             
-            if '<img' in description:
+            media_content = None
+            if description and '<img' in description:
                 p = re.compile(r'<img[\s\S+]?src=\"(\S+)?\"')
                 if m := p.search(description):
                     media_content = m.group(1)
-            else:
-                media_content = None
             
             item_list.append(dict(
                 title=title,
@@ -242,7 +248,7 @@ def expire_items(feed_id):
 
 
 while(True):
-    print('Feed updating has starting...')
+    print('Feed updating has started...')
     cur = db.cursor()
     cur.execute(""" SELECT * From feed """)
     feed_ids = cur.fetchall()

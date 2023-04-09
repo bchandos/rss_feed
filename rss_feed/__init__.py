@@ -3,7 +3,6 @@ import os
 import click
 from flask import Flask
 from flask.cli import with_appcontext
-from flask_sqlalchemy import SQLAlchemy
 
 from rss_feed.models import db
 
@@ -14,6 +13,7 @@ def create_app(test_config=None):
     app.config.from_mapping(SECRET_KEY='dev')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config["SQLALCHEMY_ECHO"] = True
 
     if test_config is None:
         # Load the instance config, if it exists, when not testing
