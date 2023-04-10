@@ -249,7 +249,7 @@ if (passwordIcon) {
         const icon = e.target
         const passwordInput = document.getElementById('password')
         const newInputType = passwordInput.type === 'password' ? 'text' : 'password'
-        const newIconUrl = newInputType === 'password' ? '/static/icons/eye.svg' : '/static/icons/eye-off.svg'
+        const newIconUrl = newInputType === 'password' ? 'static/icons/eye.svg' : 'static/icons/eye-off.svg'
         icon.src = newIconUrl
         passwordInput.type = newInputType
     })
