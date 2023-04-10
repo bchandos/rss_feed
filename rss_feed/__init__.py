@@ -9,12 +9,13 @@ from rss_feed.models import db
 
 def create_app(test_config=None):
     # create and configure the app
-    app = Flask(__name__, instance_relative_config=True)
+    BASE_URL = '/rss-feed' if os.environ['FLASK_ENV'] == 'production' else ''
+    app = Flask(__name__, instance_relative_config=True, static_url_path=f'{BASE_URL}/static')
     app.config.from_mapping(SECRET_KEY='dev')
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     # app.config["SQLALCHEMY_ECHO"] = True
-
+    app.
     if test_config is None:
         # Load the instance config, if it exists, when not testing
         app.config.from_pyfile('config.py', silent=True)
