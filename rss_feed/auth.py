@@ -1,11 +1,15 @@
 import functools
+import os
+
 from flask import Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.exceptions import abort
 
 from rss_feed.models import User, UserFeed, db
 
-bp = Blueprint('auth', __name__, url_prefix='/auth')
+BASE_URL = '/rss-feed' if os.environ['FLASK_ENV'] == 'production' else ''
+
+bp = Blueprint('auth', __name__, url_prefix=f'{BASE_URL}/auth')
 
 
 @bp.route('/register', methods=('GET', 'POST'))

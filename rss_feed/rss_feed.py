@@ -15,7 +15,9 @@ from rss_feed.models import User, Feed, UserFeed, UserItem, Item, db
 
 from werkzeug.security import generate_password_hash
 
-bp = Blueprint('rss_feed', __name__)
+BASE_URL = '/rss-feed' if os.environ['FLASK_ENV'] == 'production' else ''
+
+bp = Blueprint('rss_feed', __name__, url_prefix=f'{BASE_URL}')
 
 
 def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookmarks_only=False, read=False):
