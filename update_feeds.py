@@ -10,7 +10,7 @@ from dateutil.parser import parse
 
 db = RealDictConnection(os.environ['DATABASE_URL'])
 
-if os.environ['FLASK_DEBUG'] == 'true':
+if os.environ.get('FLASK_DEBUG') == 'true':
     WAIT_MINUTES = int(os.environ.get('WAIT_MINUTES', 2))
     WAIT_SECONDS = 6
 else:
@@ -42,7 +42,7 @@ def parse_feed_items(feed_url):
     xml_file = download_feed(feed_url)
     # print('>>>>', xml_file)
     item_list = list()
-    if xml_file and xml_file.tag == 'rss':
+    if getattr(xml_file, 'tag', None) == 'rss':
         ns = dict(
             content='http://purl.org/rss/1.0/modules/content/',
             media='http://search.yahoo.com/mrss/',
@@ -95,7 +95,7 @@ def parse_feed_items(feed_url):
                 media_content=media_content,
                 guid=guid
             ))
-    elif xml_file and xml_file.tag == '{http://www.w3.org/2005/Atom}feed':
+    elif getattr(xml_file, 'tag', None) == '{http://www.w3.org/2005/Atom}feed':
         ns = dict(atom='http://www.w3.org/2005/Atom')
         all_items = xml_file.findall('atom:entry', ns)
         for item in all_items:
@@ -147,6 +147,7 @@ def parse_feed_items(feed_url):
 
 def download_items(url, feed_id):
     all_items = parse_feed_items(url)
+    print(f'{len(all_items)} items downloaded from {url}.')
     for item in all_items:
         # Don't process items older than 14 days, because we delete those
         if item['publication_date'] >= datetime.timestamp(datetime.now() - timedelta(days=14)): 
