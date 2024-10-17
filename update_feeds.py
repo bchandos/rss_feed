@@ -56,7 +56,7 @@ def parse_feed_items(feed_url):
             title = item.find('title')
             link = item.find('link')
             guid = item.find('guid')
-            if not title or not link or not guid:
+            if title is None or link is None or guid is None:
                 # Without all of these, it's not a valid item
                 print('Missing title, link, or guid:', title, link, guid)
                 continue
@@ -109,7 +109,7 @@ def parse_feed_items(feed_url):
             title = item.find('atom:title', ns)
             link = item.find('atom:link', ns)
             guid = item.find('atom:id', ns)
-            if not title or not link or not guid:
+            if title is None or link is None or guid is None:
                 # Without all of these, not a valid item
                 print('Missing title, link, or guid:', title, link, guid)
                 continue
