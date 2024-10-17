@@ -38,10 +38,6 @@ def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookma
                     order_by(order_option).\
                     limit(limit).offset(offset).all()
 
-@bp.before_app_first_request
-def check_db():
-
-
 @bp.errorhandler(404)
 def error_handler(error):
     if isinstance(error, str):
