@@ -44,12 +44,14 @@ def parse_feed_items(feed_url):
     xml_file = download_feed(feed_url)
     # print('>>>>', xml_file)
     item_list = list()
-    if getattr(xml_file, 'tag', None) == 'rss':
+    if xml_file is not None and getattr(xml_file, 'tag', None) == 'rss':
+        print('Parsing standard RSS feed...')   
         ns = dict(
             content='http://purl.org/rss/1.0/modules/content/',
             media='http://search.yahoo.com/mrss/',
         )
         all_items = xml_file[0].findall('item', ns)
+        print(f'Found {len(all_items)} items...')
         for item in all_items:
             title = item.find('title')
             link = item.find('link')
@@ -97,11 +99,12 @@ def parse_feed_items(feed_url):
                 media_content=media_content,
                 guid=guid
             ))
-    elif getattr(xml_file, 'tag', None) == '{http://www.w3.org/2005/Atom}feed':
+    elif xml_file is not None and getattr(xml_file, 'tag', None) == '{http://www.w3.org/2005/Atom}feed':
+        print('Parsing Atom feed...')
         ns = dict(atom='http://www.w3.org/2005/Atom')
         all_items = xml_file.findall('atom:entry', ns)
+        print(f'Found {len(all_items)} items...')
         for item in all_items:
-            
             title = item.find('atom:title', ns)
             link = item.find('atom:link', ns)
             guid = item.find('atom:id', ns)
