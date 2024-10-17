@@ -11,14 +11,11 @@ from flask import (Blueprint, flash, g, redirect, render_template, request,
 from werkzeug.exceptions import abort
 
 from rss_feed.auth import login_required, debug_only
-from rss_feed.models import User, Feed, UserFeed, UserItem, Item, db
-
-from werkzeug.security import generate_password_hash
+from rss_feed.models import Feed, UserFeed, UserItem, Item, db
 
 BASE_URL = '/rss-feed' if os.environ['FLASK_ENV'] == 'production' else ''
 
 bp = Blueprint('rss_feed', __name__, url_prefix=f'{BASE_URL}')
-
 
 def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookmarks_only=False, read=False):
     q = db.session.query(Item, Feed, UserFeed, UserItem).join(Feed, Feed.id==Item.feed_id).join(UserFeed, UserFeed.feed_id==Item.feed_id).join(UserItem)
@@ -43,13 +40,6 @@ def query_items(user_id, order='DESC', limit=100, offset=0, feed_id=None, bookma
 
 @bp.before_app_first_request
 def check_db():
-    try:
-        if os.environ.get('DEMO_MODE', False) == 'true':
-            demo_mode_setup()
-        db.create_all()
-        db.session.commit()
-    except:
-        raise
 
 
 @bp.errorhandler(404)
@@ -471,36 +461,3 @@ def parse_feed_information(feed_url):
         return {}
 
 
-def demo_mode_setup():
-    db.drop_all()
-    db.session.commit()
-    db.create_all()
-    db.session.commit()
-    # Create a demo user
-    new_user = User(username='demo', password=generate_password_hash('demo'))
-    db.session.add(new_user)
-    db.session.commit()
-    # Add two example feeds
-    feed_1 = Feed(
-        name='Biz & IT – Ars Technica',
-        url='https://feeds.arstechnica.com/arstechnica/technology-lab'
-    )
-    feed_2 = Feed(
-        name='www.espn.com - TOP',
-        url='https://www.espn.com/espn/rss/news'
-    )
-    db.session.add(feed_1)
-    db.session.add(feed_2)
-    db.session.commit()
-    user_feed_1 = UserFeed(
-        user_id=new_user.id,
-        feed_id=feed_1.id
-    )
-    user_feed_2 = UserFeed(
-        user_id=new_user.id,
-        feed_id=feed_2.id
-    )
-    db.session.add(user_feed_1)
-    db.session.add(user_feed_2)
-    # Commit it!
-    db.session.commit()

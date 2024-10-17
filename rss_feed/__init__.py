@@ -4,8 +4,9 @@ import click
 from flask import Flask
 from flask.cli import with_appcontext
 
-from rss_feed.models import db
+from rss_feed.models import db, User, UserFeed, Feed
 
+from werkzeug.security import generate_password_hash
 
 def create_app(test_config=None):
     # create and configure the app
@@ -36,6 +37,15 @@ def create_app(test_config=None):
 
     db.init_app(app)
     app.cli.add_command(init_db_command)
+    
+    with app.app_context():
+        try:
+            if os.environ.get('DEMO_MODE', False) == 'true':
+                demo_mode_setup()
+            db.create_all()
+            db.session.commit()
+        except:
+            raise
 
     return app
 
@@ -48,3 +58,37 @@ def init_db_command():
     db.create_all()
     db.session.commit()
     click.echo('Initialized the database.')
+
+def demo_mode_setup():
+    db.drop_all()
+    db.session.commit()
+    db.create_all()
+    db.session.commit()
+    # Create a demo user
+    new_user = User(username='demo', password=generate_password_hash('demo'))
+    db.session.add(new_user)
+    db.session.commit()
+    # Add two example feeds
+    feed_1 = Feed(
+        name='Biz & IT – Ars Technica',
+        url='https://feeds.arstechnica.com/arstechnica/technology-lab'
+    )
+    feed_2 = Feed(
+        name='www.espn.com - TOP',
+        url='https://www.espn.com/espn/rss/news'
+    )
+    db.session.add(feed_1)
+    db.session.add(feed_2)
+    db.session.commit()
+    user_feed_1 = UserFeed(
+        user_id=new_user.id,
+        feed_id=feed_1.id
+    )
+    user_feed_2 = UserFeed(
+        user_id=new_user.id,
+        feed_id=feed_2.id
+    )
+    db.session.add(user_feed_1)
+    db.session.add(user_feed_2)
+    # Commit it!
+    db.session.commit()
