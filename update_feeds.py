@@ -18,6 +18,7 @@ else:
     WAIT_SECONDS = 60
 
 def download_feed(feed_url):
+    print(f'Downloading feed {feed_url}...')
     try:
         req = Request(
                 feed_url,
@@ -25,12 +26,13 @@ def download_feed(feed_url):
             )
         f = urlopen(req)
     except:
+        print('Request failed!')
         return None
     
     with f:
         if f.getcode() == 200 and 'xml' in f.getheader('Content-Type'):
             return ET.fromstring(f.read())
-    
+    print(f'Request completed but bad response code ({f.getcode()}) or Content-Type header ({f.getheader("Content-Type")})')
     return None
 
 def parse_feed_items(feed_url):
