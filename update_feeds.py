@@ -256,6 +256,8 @@ def expire_items(feed_id):
 
 
 while(True):
+    print('Initial wait...')
+    time.sleep(WAIT_SECONDS)
     print('Feed updating has started...')
     cur = db.cursor()
     cur.execute(""" SELECT * From feed """)

@@ -8,4 +8,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 RUN useradd -s /bin/bash www
 
-CMD [ "uwsgi", "/usr/src/app/uwsgi.ini" ]
+CMD uwsgi /usr/src/app/uwsgi.ini & python update_feeds.py
