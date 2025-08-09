@@ -6,6 +6,9 @@ import os
 import time
 import xml.etree.ElementTree as ET
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from dateutil.parser import parse
 
 db = RealDictConnection(os.environ['DATABASE_URL'])
