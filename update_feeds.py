@@ -72,7 +72,7 @@ def parse_feed_items(feed_url):
             else:
                 description = 'No description available.'
             pd = item.find('pubDate')
-            if pd and pd.text: 
+            if pd is not None and pd.text: 
                 publication_date = datetime.timestamp(parse(pd.text))
             else:
                 publication_date = datetime.timestamp(datetime.today())
