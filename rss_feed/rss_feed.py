@@ -457,3 +457,10 @@ def parse_feed_information(feed_url):
         return {}
 
 
+def import_opml(file_contents):
+    """Given file contents of an alleged OPML file, parse it
+    and import the contents to the datbase."""
+    try:
+        opml = ET.fromstring(file_contents)
+    except:
+        return None

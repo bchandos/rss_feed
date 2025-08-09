@@ -237,7 +237,7 @@ const feedSelector = document.getElementById('feed-selector')
 if (feedSelector) {
   feedSelector.addEventListener('change', e => {
     if (e.target.value) {
-      window.location = `/${e.target.value}`
+      window.location = `${$SCRIPT_ROOT}/${e.target.value}`
     }
   })
 }
