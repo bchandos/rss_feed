@@ -62,6 +62,7 @@ def login():
         if not error:
             session.clear()
             session['user_id'] = user.id
+            session.permanent = True
             return redirect(url_for('rss_feed.index'))
 
         flash(error)

@@ -12,10 +12,16 @@ def create_app(test_config=None):
     # create and configure the app
     BASE_URL = '/rss-feed' if os.environ['FLASK_ENV'] == 'production' else ''
     app = Flask(__name__, instance_relative_config=True, static_url_path=f'{BASE_URL}/static')
-    app.config.from_mapping(SECRET_KEY='dev')
+    app.config['SECRET_KEY'] = os.environ['FLASK_SECRET_KEY']
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     # app.config["SQLALCHEMY_ECHO"] = True
+    
+    # Cookie settings
+    app.config['SESSION_COOKIE_NAME'] = 'rss_feed_session'
+    if BASE_URL:
+        app.config['SESSION_COOKIE_PATH'] = BASE_URL
+    app.config['PERMANENT_SESSION_LIFETIME'] = 1800
     
     if test_config is None:
         # Load the instance config, if it exists, when not testing
