@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}"> 
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-<script type="text/javascript">const $SCRIPT_ROOT = '/rss-feed';</script>
+<script type="text/javascript">const $SCRIPT_ROOT = '{{BASE_URL}}';</script>
 <script defer type="text/javascript" src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 <body>
     <nav class="w3-bar w3-light-blue nav-dark">
