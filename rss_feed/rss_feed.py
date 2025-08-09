@@ -44,6 +44,10 @@ def error_handler(error):
         flash(error)
     return redirect(url_for('rss_feed.index'))
 
+@bp.context_processor
+def inject_base_url():
+    return {"BASE_URL": BASE_URL}
+
 @bp.route('/')
 @login_required
 def index():
@@ -291,7 +295,7 @@ def datetimeformat(value, format='%m-%d-%Y @ %H:%M'):
 @login_required
 def mark_read():
     user_id = g.user.id
-    id = getattr(request.json, 'id', None) 
+    id = request.json.get('id', None) 
     if id:
         user_item = UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==id).first()
         if user_item.read == 0:
@@ -310,8 +314,8 @@ def mark_read():
 @login_required
 def bookmark():
     user_id = g.user.id
-    id = int(getattr(request.json, 'id', 0))
-    marked = getattr(request.json, 'marked', 'false')
+    id = int(request.json.get('id', 0))
+    marked = request.json.get('marked', 'false')
     
     if id:
         user_item = UserItem.query.filter(UserItem.user_id==user_id, UserItem.item_id==id).first()
